@@ -6,7 +6,19 @@
 - cAdvisor requires external tooling to to store collected data long-term and to run any further analytics
 
 <img src="https://github.com/YaniKyr/Thesis_Notes/blob/main/SharedScreenshot.jpg"  width="50%" height="50%">
+
+
+# Metrics Server
+
 <img src="https://github.com/YaniKyr/Thesis_Notes/blob/main/SharedScreenshot1.jpg"  width="50%" height="50%">
+
+Metrics Server collects resource metrics from Kubelets and exposes them in Kubernetes apiserver through Metrics API
+
+- **Kubelet**. Provides node/pod/container resource usage information (cAdvisor will be slimmed down to provide only core system metrics). Kubelet acts as a node-level and application-level metrics collector as opposed to cAdvisor responsible for cluster-wide metrics.
+- **Resource estimator**. Runs as a DaemonSet that turns raw usage values collected from Kubelet into resource estimates ready for the use by schedulers or HPA to maintain the desired state of the cluster.
+-** Metrics-server**. This is a mini-version of Heapster (Heapster is now deprecated) that was previously used as the main monitoring solution on top of cAdvisor for collecting Prometheus-format metrics. Metrics-server stores only the latest metrics values scraped from Kubelet and cAdvisor locally and has no sinks (i.e., does not store historical data).
+- **Master Metrics API**. Metrics Server exposes the master metrics API via the Discovery summarizer to external clients.
+- **The API server**. The server responsible for serving the master metrics API.
 Metrics Server is not meant for non-autoscaling purposes
 
 [Kubernetes Cluster using Docker Desktop](https://medium.com/womenintechnology/create-a-kubernetes-cluster-using-docker-desktop-72b493f3faa8)
