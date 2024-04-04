@@ -20,7 +20,7 @@ cAdvisor, short for Container Advisor, is an open-source tool developed by Googl
 
 <img src="https://github.com/YaniKyr/Thesis_Notes/blob/main/SharedScreenshot1.jpg"  width="50%" height="50%">
 
-Metrics Server collects resource metrics from Kubelets and exposes them in Kubernetes apiserver through Metrics API
+
 
 - **Kubelet**. Provides node/pod/container resource usage information (cAdvisor will be slimmed down to provide only core system metrics). Kubelet acts as a node-level and application-level metrics collector as opposed to cAdvisor responsible for cluster-wide metrics.
 - **Resource estimator**. Runs as a DaemonSet that turns raw usage values collected from Kubelet into resource estimates ready for the use by schedulers or HPA to maintain the desired state of the cluster.
@@ -31,4 +31,10 @@ Metrics Server is not meant for non-autoscaling purposes
 
 [Kubernetes Cluster using Docker Desktop](https://medium.com/womenintechnology/create-a-kubernetes-cluster-using-docker-desktop-72b493f3faa8)
 
+## Some Sum up
 
+Cadvisor captures the state and returns the data of containers. It is container based. However Metrics Api has access to K8s control plane. Collects resource metrics from Kubelets and exposes them in Kubernetes apiserver through Metrics API. 
+
+**Need to clarify** :
+Does Previous architecture schemas utilize CAdvisor? Is the Metrics Pipeline one of its kind or the general Kubernetes metrics Server use Cadvisor? 
+[Metrics](https://kubernetes.io/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/)
