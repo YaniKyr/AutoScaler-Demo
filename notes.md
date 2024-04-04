@@ -5,7 +5,8 @@
 - cAdvisor does not provide a method to modify runtime options after initial configuration. Users will need to redeploy the cAdvisor container with the new runtime options if this is required
 - cAdvisor requires external tooling to to store collected data long-term and to run any further analytics
 
-
+<img src="https://github.com/YaniKyr/Thesis_Notes/blob/main/SharedScreenshot.jpg"  width="100%" height="100%">
+<img src="https://github.com/YaniKyr/Thesis_Notes/blob/main/SharedScreenshot1.jpg"  width="100%" height="100%">
 Metrics Server is not meant for non-autoscaling purposes
 
 [Kubernetes Cluster using Docker Desktop](https://medium.com/womenintechnology/create-a-kubernetes-cluster-using-docker-desktop-72b493f3faa8)
