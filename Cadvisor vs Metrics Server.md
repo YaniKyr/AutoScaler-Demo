@@ -1,4 +1,4 @@
-(Kubernetes Info)[https://github.com/YaniKyr/5G_Autoscaling_Notes/blob/main/papers/Toward_Highly_Scalable_Load_Balancing_in_Kubernetes_Clusters.pdf]
+[Kubernetes Info](https://github.com/YaniKyr/5G_Autoscaling_Notes/blob/main/papers/Toward_Highly_Scalable_Load_Balancing_in_Kubernetes_Clusters.pdf)
 
 
 [Cadvisor](https://www.kubecost.com/kubernetes-devops-tools/cadvisor/)
