@@ -38,6 +38,8 @@ Metrics Server is not meant for non-autoscaling purposes
 Cadvisor captures the state and returns the data of containers. It is container based. 
 Metrics Api has access to K8s control plane. Collects resource metrics from Kubelets and exposes them in Kubernetes apiserver through Metrics API. 
 
-**Need to clarify** :
-Does Previous architecture schemas utilize CAdvisor? Is the Metrics Pipeline one of its kind or the general Kubernetes metrics Server use Cadvisor? 
-[Metrics](https://kubernetes.io/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/)
+Proposal: Metrics pipeline utilizes both metrics api and Cadvisor
+In a local-worker node point of view, Cadvisor collects reports and posts thme in kubelet. Then metrics api exposes the data from kubelet to API server (control plane). [Metrics Pipeline](https://kubernetes.io/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/)
+
+<img src="https://github.com/YaniKyr/Thesis_Notes/blob/main/SharedScreenshot2.jpg"  width="50%" height="50%">
+
