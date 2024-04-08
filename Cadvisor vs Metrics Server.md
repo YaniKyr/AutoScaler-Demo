@@ -50,8 +50,8 @@ The question of whether Metrics Server is better than cAdvisor depends on your s
 ## A brief comparison:
 
 - Functionality:
-* Metrics Server: Metrics Server is primarily designed to gather resource usage metrics (such as CPU and memory) from Kubernetes nodes and pods. It provides aggregated metrics, which are useful for autoscaling purposes and general cluster monitoring.
-* cAdvisor: cAdvisor (Container Advisor) is more focused on providing detailed container-level metrics, including resource usage, performance statistics, and information about running processes within containers.
+  * Metrics Server: Metrics Server is primarily designed to gather resource usage metrics (such as CPU and memory) from Kubernetes nodes and pods. It provides aggregated metrics, which are useful for autoscaling purposes and general cluster monitoring.
+  * cAdvisor: cAdvisor (Container Advisor) is more focused on providing detailed container-level metrics, including resource usage, performance statistics, and information about running processes within containers.
 
 - Integration with Kubernetes:
 * Metrics Server: Metrics Server is tightly integrated with Kubernetes and is the recommended way to gather resource metrics for Horizontal Pod Autoscaler and Vertical Pod Autoscaler.
