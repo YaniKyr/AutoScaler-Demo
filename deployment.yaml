@@ -1,0 +1,35 @@
+#Mandatory should port forward py container
+#kubectl port-forward py-service-6bdf59f868-xc9ml 8001
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: py-service 
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: py-service
+  template: 
+    metadata: 
+      labels: 
+        app: py-service   
+    spec: 
+      containers: 
+        - name: py-service 
+          image: py-service:latest
+          imagePullPolicy: Never 
+          ports:
+            - containerPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: py-svc
+spec:
+  selector:
+    app: py-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+  type: LoadBalancer
