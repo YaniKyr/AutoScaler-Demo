@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: externalscaler
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: externalscaler
+  template:
+    metadata:
+      labels:
+        app: externalscaler
+    spec:
+      containers:
+      - name: externalscaler
+        image: localhost:32000/externalscaler
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "64Mi"
+          limits:
+            memory: "150Mi"
+        ports:
+        - containerPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: externalscaler
+  namespace: default
+spec:
+  ports:
+  - port: 50051
+    targetPort: 50051
+  selector:
+    app: externalscaler
+

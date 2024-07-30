@@ -1,0 +1,16 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: php-apache-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: php-apache
+  pollingInterval: 15
+  cooldownPeriod:  15
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: external
+      metadata:
+        scalerAddress: externalscaler.default:50051
