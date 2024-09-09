@@ -79,7 +79,7 @@ def home():
 
 
 
-prom = PrometheusConnect(url ="http://10.231.59.94:30007", disable_ssl=True)
+prom = PrometheusConnect(url ="http://10.245.227.171:30007", disable_ssl=True)
 
 # Get the list of all the metrics that the Prometheus host scrapes
 
