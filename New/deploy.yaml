@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auto-scaler
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auto-scaler
+  template:
+    metadata:
+      labels:
+        app: auto-scaler
+    spec:
+      containers:
+      - name: auto-scaler
+        image: localhost:32000/auto-scaler
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "500Mi"
+          limits:
+            memory: "600Mi"
+        ports:
+        - containerPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auto-scaler
+  namespace: default
+spec:
+  ports:
+  - port: 50051
+    targetPort: 50051
+  selector:
+    app: auto-scaler
+  
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: php-auto-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: php-apache
+  pollingInterval: 15
+  cooldownPeriod:  15
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: external
+      metadata:
+        scalerAddress: auto-scaler.default:50051
+
+
