@@ -7,7 +7,7 @@ import (
     "time"
 
     "google.golang.org/grpc"
-    pb "github.com/YaniKyr/home/yanni/Desktop/Repos/5G_Autoscaling_Notes/New/testfolder/client/prom"
+    pb "github.com/YaniKyr/5G_Autoscaling_Notes/New/testfolder/proto"
 )
 
 type Log struct {
