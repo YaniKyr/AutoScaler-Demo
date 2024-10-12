@@ -20,7 +20,7 @@ COPY go.mod go.sum ./
 
 
 # Copy application files
-COPY main.py requirements.txt main.go ./
+COPY main.py requirements.txt main.go main ./
 
 RUN apt-get install -y python3.12-venv
 # Install Python dependencies
@@ -30,11 +30,6 @@ RUN python3 -m venv /app/venv
 RUN /app/venv/bin/pip install --upgrade pip
 RUN /app/venv/bin/pip install -r requirements.txt
 
-# Build the Go client
-RUN go build -o go-client main.go
-
-# Expose the port for the Python server
-EXPOSE 8081
 
 # Start supervisord
 CMD ["/usr/bin/supervisord"]

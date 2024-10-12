@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"bufio"
-
+	"net/http"
+	"io/ioutil"
+	"bytes"
 	pb "github.com/kedacore/keda/v2/pkg/scalers/externalscaler"
 	"google.golang.org/grpc"
 )
@@ -16,6 +17,9 @@ type Log struct {
 	Timestamp string `json:"timestamp"`
 	Value     float64 `json:"value"`
 }
+type PrometheusRequest struct {
+    Query string `json:"query"`
+}
 
 type ExternalScaler struct {
 	pb.UnimplementedExternalScalerServer
@@ -23,27 +27,33 @@ type ExternalScaler struct {
 
 // Fetch data from the service and convert to int64
 func getData() Log {
-    responseData := Log{}
-    conn, err := net.Dial("tcp", "127.0.0.1:8082")
+	query:=`sum(rate(container_cpu_usage_seconds_total{pod=~"php.*"}[1m])*100) by (pod)[10m:]`
+    url := "http://127.0.0.1:5000/get_prometheus_data"
+    reqBody, err := json.Marshal(PrometheusRequest{Query: query})
     if err != nil {
-        fmt.Println("Dial error", err)
-        return responseData
+        log.Fatalf("could not marshal request: %v", err)
     }
-    defer conn.Close()
 
-    message, err := bufio.NewReader(conn).ReadString('\n')
+    resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
     if err != nil {
-        fmt.Println("Read error", err)
-        return responseData
+        log.Fatalf("could not fetch data: %v", err)
+    }
+    defer resp.Body.Close()
+
+    // Read the response body
+    bodyBytes, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        log.Fatalf("could not read response body: %v", err)
     }
 
-    if err := json.Unmarshal([]byte(message), &responseData); err != nil {
-        fmt.Println("Error unmarshaling JSON:", err)
-        return responseData
+    var prometheusResponse Log
+    err = json.Unmarshal(bodyBytes, &prometheusResponse)
+    if err != nil {
+        log.Fatalf("could not unmarshal response: %v", err)
     }
 
-    fmt.Println("Received value:", responseData.Value, "Timestamp:", responseData)
-    return responseData
+    fmt.Printf("Prometheus Response: %+v\n", prometheusResponse)
+	return prometheusResponse
 }
 	
 
@@ -52,7 +62,7 @@ func (e *ExternalScaler) IsActive(ctx context.Context, ScaledObject *pb.ScaledOb
 	Log := getData()
 
 
-	isActive := Log.Value > 300
+	isActive := Log.Value > 50
 	fmt.Printf("IsActive called: value = %d, Result = %v\n", Log.Value, isActive)
 	return &pb.IsActiveResponse{
 		Result: isActive,
@@ -69,7 +79,7 @@ func (e *ExternalScaler) StreamIsActive(ref *pb.ScaledObjectRef, stream pb.Exter
 func (e *ExternalScaler) GetMetricSpec(ctx context.Context, ref *pb.ScaledObjectRef) (*pb.GetMetricSpecResponse, error) {
 	metricSpec := &pb.MetricSpec{
 		MetricName: "constant_metric",
-		TargetSize: 300,
+		TargetSize: 50,
 	}
 	fmt.Printf("GetMetricSpec called: %v\n", metricSpec)
 	return &pb.GetMetricSpecResponse{

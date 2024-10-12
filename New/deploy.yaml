@@ -46,8 +46,8 @@ metadata:
 spec:
   scaleTargetRef:
     name: php-apache
-  pollingInterval: 15
-  cooldownPeriod:  15
+  pollingInterval: 3
+  cooldownPeriod:  3
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:

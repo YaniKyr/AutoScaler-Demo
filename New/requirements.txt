@@ -1,5 +1,2 @@
 prometheus_api_client
-numpy==1.26.4
 flask
-pmdarima
-statsmodels
