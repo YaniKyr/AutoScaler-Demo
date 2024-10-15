@@ -1,0 +1,5 @@
+curl -L https://istio.io/downloadIstio | sh -
+cd /to/ver/file
+export PATH=$PWD/bin:$PATH
+
+istioctl file has examples and addons
