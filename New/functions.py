@@ -1,6 +1,6 @@
 from prometheus_api_client import PrometheusConnect
 import pandas as pd
-
+import requests
 def query(prom, query):
     data = prom.custom_query(query=query)
     df = pd.DataFrame.from_dict(data[0]['values'])
@@ -9,7 +9,7 @@ def query(prom, query):
     df['value'] = df['value'].astype(float)
     return df
 def queries():
-    numpods = "sum(kube_pod_info{pod='productpage-v1-d5789fdfb-6q9r6'})"
+    numpods = "count(up{namespace='demo'})by (pod)"
     userRequests = "avg(rate(container_network_receive_bytes_total{pod=~'.*[v1|v2|v3].*',namespace='default'}[1m])/100000)[1h:]"
 
     cpuUtil = "sum(rate(container_cpu_usage_seconds_total{pod=~'.*[v1|v2|v3].*',namespace='default'}[1m])*100)[1h:]"

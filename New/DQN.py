@@ -2,10 +2,10 @@
 
 import numpy as np
 import pandas as pd
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense 
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense  #type: ignore
+from tensorflow.keras.optimizers import Adam # type: ignore
+from tensorflow.keras.losses import MeanSquaredError # type: ignore
 from prometheus_api_client import PrometheusConnect
 from collections import deque
 import requests
