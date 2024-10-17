@@ -1,14 +1,15 @@
 #TODO
 
 import numpy as np
-import padas as pd
+import pandas as pd
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense 
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import MeanSquaredError
 from prometheus_api_client import PrometheusConnect
 from collections import deque
 import requests
+import functions as fn
 
 # Define the DQN agent class
 class DQNAgent:
@@ -39,37 +40,6 @@ class DQNAgent:
         q_values = self.model.predict(state)
         return np.argmax(q_values[0])
     
-    def state():
-        numpods = 'sum(kube_pod_info)'
-        userRequests = "avg(rate(container_network_receive_bytes_total{namespace='default'}[1m])/100000)"
-        cpuUtil = "sum(rate(container_cpu_usage_seconds_total{namespace='default'}[1m])*100) by (pod)[10m:]"
-        prom = PrometheusConnect(url="http://10.152.183.236:9090", disable_ssl=True)
-        pods = prom.custom_query(query=numpods)
-        requests = prom.custom_query(query=userRequests)
-        cpu = prom.custom_query(query=cpuUtil)
-
-
-        #TODO - Create deparsh 
-        df = pd.DataFrame.from_dict(data[0]['values'])
-        df = df.rename(columns={0: 'timestamp', 1: 'value'})
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
-        df['value'] = df['value'].astype(float)
-
-        response_data = {"timestamp":"0/0/0","value":df['value'].iloc[-1]}
-        print(response_data)
-        return (pods, requests, cpu)
-
-
-    def liveness():
-        try:
-            prom = PrometheusConnect(url="http://10.152.183.236:9090", disable_ssl=True)
-            liveness_query = 'up{job="prometheus"}'
-            liveness_data = prom.custom_query(query=liveness_query)
-            print("Prometheus is live")
-        except requests.exceptions.ConnectionError as e:
-        
-            print(e, "Prometheus is not live")
-            return
     
 
     def replay(self, batch_size):
