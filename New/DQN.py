@@ -1,3 +1,5 @@
+#TODO
+
 import numpy as np
 import padas as pd
 from tensorflow.keras.models import Sequential
@@ -39,8 +41,8 @@ class DQNAgent:
     
     def state():
         numpods = 'sum(kube_pod_info)'
-        userRequests = 'sum(kube_pod_container_resource_requests_cpu_cores)'
-        cpuUtil = 'sum(rate(container_cpu_usage_seconds_total{pod=~"php.*"}[1m])*100) by (pod)[10m:]'
+        userRequests = "avg(rate(container_network_receive_bytes_total{namespace='default'}[1m])/100000)"
+        cpuUtil = "sum(rate(container_cpu_usage_seconds_total{namespace='default'}[1m])*100) by (pod)[10m:]"
         prom = PrometheusConnect(url="http://10.152.183.236:9090", disable_ssl=True)
         pods = prom.custom_query(query=numpods)
         requests = prom.custom_query(query=userRequests)

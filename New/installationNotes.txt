@@ -3,3 +3,13 @@ cd /to/ver/file
 export PATH=$PWD/bin:$PATH
 
 istioctl file has examples and addons
+
+kubectl config view --raw > ~/.kube/config
+
+istioctl manifest apply --set profile=demo
+
+@In case of problem with tls 
+sudo microk8s refresh-certs --cert ca.crt
+
+@temp
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.23/samples/addons/prometheus.yaml
