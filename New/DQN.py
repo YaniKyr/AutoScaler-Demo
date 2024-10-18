@@ -9,7 +9,7 @@ from tensorflow.keras.losses import MeanSquaredError # type: ignore
 from prometheus_api_client import PrometheusConnect
 from collections import deque
 import requests
-import functions as fn
+from functions import Prometheufunctions
 
 # Define the DQN agent class
 class DQNAgent:
@@ -56,9 +56,12 @@ class DQNAgent:
     
 # Create the environment
 
-state_size = env.observation_space.shape[0]
-action_size = env.action_space.n
 
+
+data = Prometheufunctions()
+action = [-2,-1,0,1,2]  # Actions to take
+state_size = data.queries().shape[1]  # Number of features
+action_size = len(action)  # Number of actions
 # Initialize the DQN agent
 agent = DQNAgent(state_size, action_size)
 
@@ -66,12 +69,9 @@ agent = DQNAgent(state_size, action_size)
 batch_size = 32
 num_episodes = 1000
 for episode in range(num_episodes):
-    state = env.reset()
+    
     state = np.reshape(state, [1, state_size])
     for t in range(500):
-        # Render the environment (optional)
-        env.render()
-
         # Choose an action
         action = agent.act(state)
 

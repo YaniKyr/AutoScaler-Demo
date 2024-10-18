@@ -27,14 +27,10 @@ type ExternalScaler struct {
 
 // Fetch data from the service and convert to int64
 func getData() Log {
-	query:=`sum(rate(container_cpu_usage_seconds_total{pod=~"php.*"}[1m])*100) by (pod)[10m:]`
-    url := "http://127.0.0.1:5000/get_prometheus_data"
-    reqBody, err := json.Marshal(PrometheusRequest{Query: query})
-    if err != nil {
-        log.Fatalf("could not marshal request: %v", err)
-    }
 
-    resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
+    url := "http://127.0.0.1:5000/get_prometheus_data"
+
+    resp, err := http.Post(url, "application/json")
     if err != nil {
         log.Fatalf("could not fetch data: %v", err)
     }

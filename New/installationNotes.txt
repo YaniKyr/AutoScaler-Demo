@@ -28,6 +28,13 @@ spec:
   mtls:
     mode: STRICT
 EOF 
+
+
 5.2 Test istioctl experimental describe pod $(kubectl get pod -n demo -l app=productpage -o jsonpath='{.items[0].metadata.name}') -n demo
 5.3 kubectl exec "$(kubectl get pod -n demo -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -n demo -c ratings -- curl -sS productpage:9080/productpage | grep -o "<title>.*</title>"
 https://gist.github.com/Realiserad/391855c4a0fb0072994e5ad2a53d65c0
+
+ kubectl exec "$(kubectl get pod -n demo -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -n demo -c ratings -- curl -sS productpage:9080/productpage | grep -o "<title>.*</title>"done
+
+
+curl -O https://raw.githubusercontent.com/istio/istio/release-1.16/samples/bookinfo/platform/kube/bookinfo.yaml
