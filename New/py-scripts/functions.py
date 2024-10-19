@@ -10,7 +10,7 @@ class Prometheufunctions:
         self.queries={
             "numpods": "count(up{namespace='demo'})by (pod)[1h:]",
             "userRequests": "avg(rate(container_network_receive_bytes_total{pod=~'.*[v1|v2|v3].*',namespace='default'}[1m])/100000)[1h:]",
-            "cpuUtil": "sum(rate(container_cpu_usage_seconds_total{pod=~'.*[v1|v2|v3].*',namespace='default'}[1m])*100)[1h:]",
+            "cpuUtil": "avg(sum(rate(container_cpu_usage_seconds_total{pod=~'.*[v1|v2|v3].*',namespace='default'}[1m])*100)[1h:])",
             "RT_obs": "histogram_quantile(0.95, sum by(le) (rate(istio_request_duration_milliseconds_bucket[1m])))"
         }
         self.app = Flask(__name__)
