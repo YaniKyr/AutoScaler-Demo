@@ -8,7 +8,7 @@ from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.losses import MeanSquaredError # type: ignore
 from prometheus_api_client import PrometheusConnect
 from collections import deque
-import requests
+import random
 from functions import Prometheufunctions
 
 # Define the DQN agent class

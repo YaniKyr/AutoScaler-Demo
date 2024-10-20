@@ -48,10 +48,11 @@ class Prometheufunctions:
     def getRTT(self):
         data = self.prom.custom_query(query=self.queries['RT_obs'])
         return data[0]['value'][1]
-    def Post(self,action):
+    
+    def Post(self,replicas):
         @self.app.route('/get_prometheus_data', methods=['POST'])
         def post():
-            return jsonify({"action":action})
+            return jsonify({"replicas":replicas})
 
     def run(self):
         self.app.run(host='0.0.0.0', port=5000)

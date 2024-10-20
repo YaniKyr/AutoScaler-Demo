@@ -17,9 +17,6 @@ type Log struct {
 	Timestamp string `json:"timestamp"`
 	Value     float64 `json:"value"`
 }
-type PrometheusRequest struct {
-    Query string `json:"query"`
-}
 
 type ExternalScaler struct {
 	pb.UnimplementedExternalScalerServer
@@ -55,13 +52,14 @@ func getData() Log {
 
 // Check if the scaler is active
 func (e *ExternalScaler) IsActive(ctx context.Context, ScaledObject *pb.ScaledObjectRef) (*pb.IsActiveResponse, error) {
-	Log := getData()
+	value, err := getData()
+	if err != nil {
+		c.logger.Println("Error getting value:", err)
+		return nil, err
+	}
 
-
-	isActive := Log.Value > 50
-	fmt.Printf("IsActive called: value = %d, Result = %v\n", Log.Value, isActive)
 	return &pb.IsActiveResponse{
-		Result: isActive,
+		Result: value >= 0,
 	}, nil
 }
 
@@ -73,29 +71,27 @@ func (e *ExternalScaler) StreamIsActive(ref *pb.ScaledObjectRef, stream pb.Exter
 
 // GetMetricSpec provides the metric specification
 func (e *ExternalScaler) GetMetricSpec(ctx context.Context, ref *pb.ScaledObjectRef) (*pb.GetMetricSpecResponse, error) {
-	metricSpec := &pb.MetricSpec{
-		MetricName: "constant_metric",
-		TargetSize: 50,
-	}
-	fmt.Printf("GetMetricSpec called: %v\n", metricSpec)
 	return &pb.GetMetricSpecResponse{
-		MetricSpecs: []*pb.MetricSpec{metricSpec},
+		MetricSpecs: []*pb.MetricSpec{{
+			MetricName: "constant_metric",
+			TargetSize: 1,
+		}},
 	}, nil
 }
 
 // GetMetrics provides the current metric values
 func (e *ExternalScaler) GetMetrics(ctx context.Context, req *pb.GetMetricsRequest) (*pb.GetMetricsResponse, error) {
-	Log := getData()
-	
+	desired, err := getData()
+	if err != nil {
+		err = fmt.Errorf("Error getting desired value: %w", err)
+		c.logger.Println(err)
+		return nil, err
+	}
 
-	// Adjust value within bounds
-	
-
-	fmt.Printf("GetMetrics called: Raw value = %d\n", Log.Value)
 	return &pb.GetMetricsResponse{
 		MetricValues: []*pb.MetricValue{{
 			MetricName:  "constant_metric",
-			MetricValue: int64(Log.Value),
+			MetricValue: desired,
 		}},
 	}, nil
 }
