@@ -6,7 +6,6 @@ from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense  #type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.losses import MeanSquaredError # type: ignore
-from prometheus_api_client import PrometheusConnect
 from collections import deque
 import random
 from functions import Prometheufunctions

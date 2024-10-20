@@ -16,11 +16,11 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Set the working directory
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY ./go-scripts/go.mod ./go-scripts/go.sum ./
 
 
 # Copy application files
-COPY main.py requirements.txt main.go main ./
+COPY ./py-scripts/main.py ./py-scripts/requirements.txt ./go-scripts/main.go ./go-scripts/main ./
 
 RUN apt-get install -y python3.12-venv
 # Install Python dependencies
