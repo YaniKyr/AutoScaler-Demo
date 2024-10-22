@@ -8,8 +8,9 @@ from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.losses import MeanSquaredError # type: ignore
 from collections import deque
 import random
-from functions import Prometheufunctions
-
+from functions import Prometheufunctions 
+from flask import Flask, jsonify
+import time
 # Define the DQN agent class
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -54,40 +55,49 @@ class DQNAgent:
             self.epsilon *= self.epsilon_decay
     
 # Create the environment
+app = Flask(__name__)
+@app.route('/Post', methods=['POST'])
+def Post(action):
+    return jsonify({"action":action})
 
 
-
-data = Prometheufunctions()
-action = [-2,-1,0,1,2]  # Actions to take
-state_size = data.queries().shape[1]  # Number of features
-action_size = len(action)  # Number of actions
-# Initialize the DQN agent
-agent = DQNAgent(state_size, action_size)
-
-# Training loop
-batch_size = 32
-num_episodes = 1000
-for episode in range(num_episodes):
+def main():
     
-    state = np.reshape(state, [1, state_size])
-    for t in range(500):
-        # Choose an action
-        action = agent.act(state)
+    action = [-2,-1,0,1,2]  # Actions to take
+    state_size = data.queries().shape[1]  # Number of features
+    action_size = len(action)  # Number of actions
+    # Initialize the DQN agent
+    agent = DQNAgent(state_size, action_size)
 
-        # Perform the action
-        next_state, reward, done, _ = env.step(action)
-        next_state = np.reshape(next_state, [1, state_size])
+    # Training loop
+    batch_size = 32
+    num_episodes = 1000
+    for episode in range(num_episodes):
+        
+        state = np.reshape(state, [1, state_size])
+        for t in range(500):
+            # Choose an action
+            action = agent.act(state)
 
-        # Remember the experience
-        agent.remember(state, action, reward, next_state, done)
+            # Perform the action
+            next_state, reward, done, _ = Post(action)
+            next_state = np.reshape(next_state, [1, state_size])
 
-        # Update the state
-        state = next_state
+            # Remember the experience
+            agent.remember(state, action, reward, next_state, done)
 
-        # Check if episode is finished
-        if done:
-            break
+            # Update the state
+            state = next_state
 
-        # Train the agent
-        if len(agent.memory) > batch_size:
-            agent.replay(batch_size)
+            # Check if episode is finished
+            if done:
+                break
+
+            # Train the agent
+            if len(agent.memory) > batch_size:
+                agent.replay(batch_size)
+data = Prometheufunctions()
+
+if __name__ == '__main__':
+    if not data.liveness(): time.sleep(1)
+    app.run(host='0.0.0.0', port=5000)

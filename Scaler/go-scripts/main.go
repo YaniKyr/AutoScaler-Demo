@@ -14,8 +14,8 @@ import (
 )
 
 type Log struct {
-	Timestamp string `json:"timestamp"`
-	Value     float64 `json:"value"`
+	Action int `json:"action"`
+	
 }
 
 type ExternalScaler struct {
@@ -65,8 +65,22 @@ func (e *ExternalScaler) IsActive(ctx context.Context, ScaledObject *pb.ScaledOb
 
 // StreamIsActive is not implemented
 func (e *ExternalScaler) StreamIsActive(ref *pb.ScaledObjectRef, stream pb.ExternalScaler_StreamIsActiveServer) error {
-	fmt.Println("StreamIsActive called but not implemented")
-	return nil
+	for{
+		select{
+		case <-stream.Context().Done():	
+			return nil
+		case <-time.After(1 * time.Second/1000):
+			value, err := getData()
+			if err != nil {
+				c.logger.Println("Error getting value:", err)
+				return err
+			}
+			err = stream.Send(&pb.IsActiveResponse{
+				Result: true,
+			})
+
+		}
+	}
 }
 
 // GetMetricSpec provides the metric specification

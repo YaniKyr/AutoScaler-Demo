@@ -1,7 +1,6 @@
 from prometheus_api_client import PrometheusConnect
 import pandas as pd
 import requests
-from flask import Flask, request, jsonify
 
 
 class Prometheufunctions:
@@ -13,8 +12,7 @@ class Prometheufunctions:
             "cpuUtil": "avg(sum(rate(container_cpu_usage_seconds_total{pod=~'.*[v1|v2|v3].*',namespace='default'}[1m])*100)[1h:])",
             "RT_obs": "histogram_quantile(0.95, sum by(le) (rate(istio_request_duration_milliseconds_bucket[1m])))"
         }
-        self.app = Flask(__name__)
-
+        
 
     def query(self,query):
         data = self.prom.custom_query(query=query)
@@ -24,7 +22,7 @@ class Prometheufunctions:
         df['value'] = df['value'].astype(float)
         return df
     
-    def queries(self):
+    def fetchState(self):
         
         cpu = self.query( self.queries['cpuUtil'])
         reqs = self.query( self.queries['userRequests'])
@@ -40,23 +38,14 @@ class Prometheufunctions:
             liveness_query = 'up{job="prometheus"}'
             liveness_data = self.prom.custom_query(query=liveness_query)
             print("Prometheus is live")
+            return True
         except requests.exceptions.ConnectionError as e:
         
             print(e, "Prometheus is not live")
-            return
+            return  False
         
     def getRTT(self):
         data = self.prom.custom_query(query=self.queries['RT_obs'])
         return data[0]['value'][1]
     
-    def Post(self,replicas):
-        @self.app.route('/get_prometheus_data', methods=['POST'])
-        def post():
-            return jsonify({"replicas":replicas})
-
-    def run(self):
-        self.app.run(host='0.0.0.0', port=5000)
-
-if __name__ == '__main__':
-    prometheus_app = Prometheufunctions()
-    prometheus_app.run()
+    
