@@ -1,4 +1,6 @@
-#TODO
+#TODO : Find the query bug
+#TODO : Theoretical implementation of the DQN
+
 
 import numpy as np
 import pandas as pd
@@ -10,7 +12,7 @@ from collections import deque
 import random
 from functions import Prometheufunctions 
 import json
-import time
+
 # Define the DQN agent class
 class DQNAgent:
     def __init__(self, state_size, action_size):

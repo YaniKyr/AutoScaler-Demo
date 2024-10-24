@@ -10,17 +10,10 @@ RUN apt-get update && apt-get install -y \
 # Create necessary directories
 RUN mkdir -p /var/log/supervisor
 
-# Copy the supervisord configuration file
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 # Set the working directory
 WORKDIR /app
 
-COPY /go-scripts/go.mod /go-scripts/go.sum ./
-
-
-# Copy application files
-COPY /py-scripts/DQN.py /py-scripts/functions.py  /py-scripts/requirements.txt /go-scripts/main.go  ./
+COPY /py-scripts/requirements.txt ./
 
 RUN apt-get install -y python3.12-venv
 # Install Python dependencies
@@ -29,7 +22,18 @@ RUN python3 -m venv /app/venv
 # Activate the virtual environment and install Python dependencies
 RUN /app/venv/bin/pip install --upgrade pip
 RUN /app/venv/bin/pip install -r requirements.txt
-RUN go build -o main ./go-scripts/main.go
+
+# Copy the supervisord configuration file
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+COPY /go-scripts/go.mod /go-scripts/go.sum ./
+
+# Copy application files
+COPY /py-scripts/DQN.py /py-scripts/functions.py /go-scripts/main.go  ./
+
+
+
+RUN go build -o main main.go
 
 # Start supervisord
 CMD ["/usr/bin/supervisord"]
