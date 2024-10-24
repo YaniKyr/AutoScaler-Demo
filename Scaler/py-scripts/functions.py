@@ -5,7 +5,7 @@ import requests
 
 class Prometheufunctions:
     def __init__(self):
-        self.prom = PrometheusConnect(url="http://10.152.183.236:9090", disable_ssl=True)
+        self.prom = PrometheusConnect(url="http://prometheus:9090", disable_ssl=True)
         self.queries={
             "numpods": "count(up{namespace='demo'})by (pod)[1h:]",
             "userRequests": "avg(rate(container_network_receive_bytes_total{pod=~'.*[v1|v2|v3].*',namespace='default'}[1m])/100000)[1h:]",

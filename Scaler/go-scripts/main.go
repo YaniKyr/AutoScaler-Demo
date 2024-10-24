@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"io/ioutil"
-	"bytes"
+	"time"
 	pb "github.com/kedacore/keda/v2/pkg/scalers/externalscaler"
 	"google.golang.org/grpc"
 )
 
-type Log struct {
-	Action int `json:"action"`
+type Action struct {
+	action int `json:"action"`
 	
 }
 
@@ -23,30 +22,22 @@ type ExternalScaler struct {
 }
 
 // Fetch data from the service and convert to int64
-func getData() Log {
+func getData() (ctx Action, err error) {
+	filename := "/tmp/shared_file.json"
+	var action Action
 
-    url := "http://127.0.0.1:5000/get_prometheus_data"
-
-    resp, err := http.Post(url, "application/json")
+    data, err := ioutil.ReadFile(filename)
     if err != nil {
-        log.Fatalf("could not fetch data: %v", err)
-    }
-    defer resp.Body.Close()
-
-    // Read the response body
-    bodyBytes, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        log.Fatalf("could not read response body: %v", err)
+        return action, fmt.Errorf("could not read file: %v", err)
     }
 
-    var prometheusResponse Log
-    err = json.Unmarshal(bodyBytes, &prometheusResponse)
+    err = json.Unmarshal(data, &action)
     if err != nil {
-        log.Fatalf("could not unmarshal response: %v", err)
+        return action, fmt.Errorf("could not unmarshal JSON: %v", err)
     }
 
-    fmt.Printf("Prometheus Response: %+v\n", prometheusResponse)
-	return prometheusResponse
+    return action, nil
+    
 }
 	
 
@@ -54,7 +45,7 @@ func getData() Log {
 func (e *ExternalScaler) IsActive(ctx context.Context, ScaledObject *pb.ScaledObjectRef) (*pb.IsActiveResponse, error) {
 	value, err := getData()
 	if err != nil {
-		c.logger.Println("Error getting value:", err)
+		fmt.Println("Error getting value:", err)
 		return nil, err
 	}
 
@@ -67,21 +58,23 @@ func (e *ExternalScaler) IsActive(ctx context.Context, ScaledObject *pb.ScaledOb
 func (e *ExternalScaler) StreamIsActive(ref *pb.ScaledObjectRef, stream pb.ExternalScaler_StreamIsActiveServer) error {
 	for{
 		select{
-		case <-stream.Context().Done():	
-			return nil
-		case <-time.After(1 * time.Second/1000):
-			value, err := getData()
-			if err != nil {
-				c.logger.Println("Error getting value:", err)
-				return err
+			case <-stream.Context().Done():	
+				return nil
+			case <-time.After(1 * time.Second/1000):
+				value, err := getData()
+				if err != nil {
+					fmt.Println("Error getting value:", err)
+					return err
+				}
+				if ref.ScalerMetadata["desired"]!= value{
+				err = stream.Send(&pb.IsActiveResponse{
+					Result: true,
+				})
 			}
-			err = stream.Send(&pb.IsActiveResponse{
-				Result: true,
-			})
-
 		}
 	}
 }
+
 
 // GetMetricSpec provides the metric specification
 func (e *ExternalScaler) GetMetricSpec(ctx context.Context, ref *pb.ScaledObjectRef) (*pb.GetMetricSpecResponse, error) {
@@ -98,7 +91,7 @@ func (e *ExternalScaler) GetMetrics(ctx context.Context, req *pb.GetMetricsReque
 	desired, err := getData()
 	if err != nil {
 		err = fmt.Errorf("Error getting desired value: %w", err)
-		c.logger.Println(err)
+		fmt.Println(err)
 		return nil, err
 	}
 

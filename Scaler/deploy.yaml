@@ -51,8 +51,8 @@ spec:
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:
-    - type: external
-      metadata:
-        scalerAddress: auto-scaler.default:50051
+  - type: external-push
+    metadata:
+      scalerAddress: auto-scaler.default:50051
 
 

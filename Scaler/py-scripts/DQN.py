@@ -9,7 +9,7 @@ from tensorflow.keras.losses import MeanSquaredError # type: ignore
 from collections import deque
 import random
 from functions import Prometheufunctions 
-from flask import Flask, jsonify
+import json
 import time
 # Define the DQN agent class
 class DQNAgent:
@@ -40,7 +40,13 @@ class DQNAgent:
         q_values = self.model.predict(state)
         return np.argmax(q_values[0])
     
-    
+    def reward(self,data):
+        RTT = data.getRTT()
+        if RTT < 250:
+            return    1/(1+(RTT/250))
+        else:
+            return -1
+            
 
     def replay(self, batch_size):
         minibatch = np.array(random.sample(self.memory, batch_size))
@@ -55,16 +61,19 @@ class DQNAgent:
             self.epsilon *= self.epsilon_decay
     
 # Create the environment
-app = Flask(__name__)
-@app.route('/Post', methods=['POST'])
+
 def Post(action):
-    return jsonify({"action":action})
+    file = 'tmp/shared_file.json'
+    data = {'action': action}
+    with open('data.json', 'w') as file:
+        json.dump(data, file)
+    
 
 
 def main():
-    
+    data = Prometheufunctions()
     action = [-2,-1,0,1,2]  # Actions to take
-    state_size = data.queries().shape[1]  # Number of features
+    state_size = data.fetchState().shape[1]  # Number of features
     action_size = len(action)  # Number of actions
     # Initialize the DQN agent
     agent = DQNAgent(state_size, action_size)
@@ -80,7 +89,15 @@ def main():
             action = agent.act(state)
 
             # Perform the action
-            next_state, reward, done, _ = Post(action)
+            #next_state, reward, done, _ = Post(action)
+            Post(action)
+            next_state = data.fetchState()
+            reward = agent.reward(data)
+            done = False
+
+
+
+
             next_state = np.reshape(next_state, [1, state_size])
 
             # Remember the experience
@@ -96,8 +113,7 @@ def main():
             # Train the agent
             if len(agent.memory) > batch_size:
                 agent.replay(batch_size)
-data = Prometheufunctions()
+
 
 if __name__ == '__main__':
-    if not data.liveness(): time.sleep(1)
-    app.run(host='0.0.0.0', port=5000)
+    main()
