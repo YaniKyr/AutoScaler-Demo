@@ -30,7 +30,7 @@ class DQNAgent:
         model.add(Dense(24, input_dim=self.state_size, activation='relu'))
         model.add(Dense(24, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
-        model.compile(optimizer=Adam(), loss=MeanSquaredError())
+        model.compile(optimizer=Adam(), loss=MeanSquaredError(),metrics=['accuracy','f1_score','mean_squared_error','categorical_crossentropy'])
         return model
 
     def remember(self, state, action, reward, next_state, done):
@@ -51,23 +51,31 @@ class DQNAgent:
             
 
     def replay(self, batch_size):
-        minibatch = np.array(random.sample(self.memory, batch_size))
-        for state, action, reward, next_state, done in minibatch:
+        #import ipdb; ipdb.set_trace()
+        #minibatch = np.array(random.sample(self.memory, batch_size))
+        print("Having Replay")
+        for state, action, reward, next_state, done in self.memory:
             target = reward
+            state,next_state = np.array(state),np.array(next_state)
             if not done:
-                target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
+                try :
+                    target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
+                except ValueError as e:
+                    print(e)
+           
             target_f = self.model.predict(state)
+            
             target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
+            self.model.fit(state, target_f, epochs=10,verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
 # Create the environment
 
 def Post(action):
-    file = 'tmp/shared_file.json'
+    file = '/tmp/shared_file.json'
     data = {'action': action}
-    with open('data.json', 'w') as file:
+    with open(file, 'w') as file:
         json.dump(data, file)
     
 
@@ -75,7 +83,8 @@ def Post(action):
 def main():
     data = Prometheufunctions()
     action = [-2,-1,0,1,2]  # Actions to take
-    state_size = data.fetchState().shape[1]  # Number of features
+    state = data.fetchState()  # Number of features
+    state_size  =state[['value_cpu','value_user','num_pods']].shape[1]
     action_size = len(action)  # Number of actions
     # Initialize the DQN agent
     agent = DQNAgent(state_size, action_size)
@@ -85,11 +94,10 @@ def main():
     num_episodes = 1000
     for episode in range(num_episodes):
         
-        state = np.reshape(state, [1, state_size])
         for t in range(500):
             # Choose an action
-            action = agent.act(state)
-
+            action = agent.act(state[['value_cpu','value_user','num_pods']])
+            
             # Perform the action
             #next_state, reward, done, _ = Post(action)
             Post(action)
@@ -97,18 +105,15 @@ def main():
             reward = agent.reward(data)
             done = False
 
-
-
-
-            next_state = np.reshape(next_state, [1, state_size])
-
+            
             # Remember the experience
-            agent.remember(state, action, reward, next_state, done)
+            agent.remember(state[['value_cpu','value_user','num_pods']].values.tolist(), action, reward, next_state[['value_cpu','value_user','num_pods']].values.tolist(), done)
 
             # Update the state
             state = next_state
 
             # Check if episode is finished
+            print("Episode: {}/{}, step: {}, action: {}, reward: {}, done: {}".format(episode, num_episodes, t, action, reward, done))
             if done:
                 break
 

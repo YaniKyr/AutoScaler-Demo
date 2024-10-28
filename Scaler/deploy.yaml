@@ -54,6 +54,6 @@ spec:
   triggers:
   - type: external-push
     metadata:
-      scalerAddress: auto-scaler.default:50051
+      scalerAddress: auto-scaler.demo:50051
 
 

@@ -26,14 +26,12 @@ RUN /app/venv/bin/pip install -r requirements.txt
 # Copy the supervisord configuration file
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-COPY /go-scripts/go.mod /go-scripts/go.sum ./
+COPY /go-scripts/go.mod /go-scripts/go.sum /go-scripts/main ./
 
 # Copy application files
 COPY /py-scripts/DQN.py /py-scripts/functions.py /go-scripts/main.go  ./
 
 
-
-RUN go build -o main main.go
 
 # Start supervisord
 CMD ["/usr/bin/supervisord"]
