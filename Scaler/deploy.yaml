@@ -55,5 +55,6 @@ spec:
   - type: external-push
     metadata:
       scalerAddress: auto-scaler.demo:50051
+      metricName: "constant_metric"
 
 

@@ -43,7 +43,7 @@ class DQNAgent:
         return np.argmax(q_values[0])
     
     def reward(self,data):
-        RTT = data.getRTT()
+        RTT = int(round(float(data.getRTT())))
         if RTT < 250:
             return    1/(1+(RTT/250))
         else:
