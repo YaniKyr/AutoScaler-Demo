@@ -16,7 +16,7 @@
 # Set up Steps
 1. Install istio
 2. Install Prometheus from istioctl file
-3. kubectl label namespace demo istio-injection=enable -- enable injection in a ns
+3. kubectl label namespace demo istio-injection=enabled -- enable injection in a ns
 4. Deploy Bookinfo in the selected ns 
 5.1 Enforce mTLS - - cat <<EOF | kubectl apply -f -
 apiVersion: security.istio.io/v1beta1
@@ -30,7 +30,9 @@ spec:
 EOF 
 
 
-5.2 Test istioctl experimental describe pod $(kubectl get pod -n demo -l app=productpage -o jsonpath='{.items[0].metadata.name}') -n demo
+5.2 Test 
+        istioctl experimental describe pod $(kubectl get pod -n app -l app=productpage -o jsonpath='{.items[0].metadata.name}') -n app
+
 5.3 kubectl exec "$(kubectl get pod -n demo -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -n demo -c ratings -- curl -sS productpage:9080/productpage | grep -o "<title>.*</title>"
 https://gist.github.com/Realiserad/391855c4a0fb0072994e5ad2a53d65c0
 

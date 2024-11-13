@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auto-scaler
-  namespace: demo
+  namespace: app
 spec:
   replicas: 1
   selector:
@@ -31,7 +31,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: auto-scaler
-  namespace: demo
+  namespace: app
 spec:
   ports:
   - port: 50051
@@ -44,7 +44,7 @@ apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: bi-scaler
-  namespace: demo
+  namespace: app
 spec:
   scaleTargetRef:
     name: productpage-v1
@@ -54,7 +54,5 @@ spec:
   triggers:
   - type: external-push
     metadata:
-      scalerAddress: auto-scaler.demo:50051
+      scalerAddress: auto-scaler.app:50051
       metricName: "constant_metric"
-
-
