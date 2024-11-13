@@ -1,4 +1,3 @@
-#TODO : Find the query bug
 #TODO : Theoretical implementation of the DQN
 
 

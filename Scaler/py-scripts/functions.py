@@ -8,7 +8,7 @@ class Prometheufunctions:
         self.prom = PrometheusConnect(url="http://10.152.183.212:9090", disable_ssl=True)
         self.queries={
             "numpods": "count(up{namespace='demo'})by (pod)",
-            "userRequests": "avg(rate(container_network_receive_bytes_total{pod=~'productpage.*',namespace='demo'}[1m]))",
+            "userRequests": "sum(rate(istio_requests_total{pod=~'product.*'}[1m]))",
             "cpuUtil": "avg(sum(rate(container_cpu_usage_seconds_total{pod=~'productpage.*',namespace='demo'}[1m])*100))",
             "RT_obs": "histogram_quantile(0.95, sum by(le) (rate(istio_request_duration_milliseconds_bucket[1m])))"
         }
