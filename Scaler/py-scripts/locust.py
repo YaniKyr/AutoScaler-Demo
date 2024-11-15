@@ -6,12 +6,12 @@ from locust import HttpUser, task, between, events
 import gevent
 
 # Parameters
-n_users = 17  # Max users
-n_timesteps = 1000  # Number of time steps in the dataset
+n_users = 100  # Max users
+n_timesteps = 8  # Number of time steps in the dataset
 timestep_min = 1  # Minimum timestep in seconds
 timestep_max = 10  # Maximum timestep in seconds
-start_end_period_seconds = 0.4 * 60  # 10 minutes in seconds
-start_end_user_range = (1, 3)  # User count during start/end period
+start_end_period_seconds = 0.1 * 60  # 10 minutes in seconds
+start_end_user_range = (1, 5)  # User count during start/end period
 
 # Generate time series data with a dome-shaped pattern and bursts
 timesteps = [random.randint(timestep_min, timestep_max) for _ in range(n_timesteps)]
@@ -59,7 +59,7 @@ print(data.head())
 # Locust setup
 class UserBehavior(HttpUser):
     wait_time = between(1, 2)  # Time between requests
-    host = "http://localhost:9080"  # Set the base host
+    host = "http://localhost:8080"  # Set the base host
 
     @task
     def my_task(self):
