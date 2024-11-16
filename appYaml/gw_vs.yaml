@@ -1,0 +1,38 @@
+# Gateway for external traffic
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: productpage-gateway
+  namespace: app  # Replace with your namespace
+spec:
+  selector:
+    istio: ingressgateway  # Use Istio's ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+
+---
+# VirtualService to route traffic to productpage
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: productpage
+  namespace: app  # Replace with your namespace
+spec:
+  hosts:
+  - "*"  # External host
+  gateways:
+  - productpage-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/productpage"
+    route:
+    - destination:
+        host: productpage
+        port:
+          number: 9080  # Ensure this matches the productpage service port
