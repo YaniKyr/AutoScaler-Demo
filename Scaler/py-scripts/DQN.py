@@ -1,16 +1,11 @@
-#TODO : Theoretical implementation of the DQN
-
-
 import numpy as np
-import pandas as pd
+import json
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense  #type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.losses import MeanSquaredError # type: ignore
 from collections import deque
-import random
 from functions import Prometheufunctions 
-import json
 
 # Define the DQN agent class
 class DQNAgent:
@@ -32,8 +27,8 @@ class DQNAgent:
         model.compile(optimizer=Adam(), loss=MeanSquaredError(),metrics=['accuracy','f1_score','mean_squared_error','categorical_crossentropy'])
         return model
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def remember(self, state, action, reward, next_state):
+        self.memory.append((state, action, reward, next_state))
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
@@ -50,17 +45,16 @@ class DQNAgent:
             
 
     def replay(self, batch_size):
-        #import ipdb; ipdb.set_trace()
-        #minibatch = np.array(random.sample(self.memory, batch_size))
+
         print("Having Replay")
-        for state, action, reward, next_state, done in self.memory:
+        for state, action, reward, next_state in self.memory:
             target = reward
             state,next_state = np.array(state),np.array(next_state)
-            if not done:
-                try :
-                    target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
-                except ValueError as e:
-                    print(e)
+            
+            try :
+                target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
+            except ValueError as e:
+                print(e)
            
             target_f = self.model.predict(state)
             
@@ -102,19 +96,16 @@ def main():
             Post(action)
             next_state = data.fetchState()
             reward = agent.reward(data)
-            done = False
-
             
             # Remember the experience
-            agent.remember(state[['value_cpu','value_user','num_pods']].values.tolist(), action, reward, next_state[['value_cpu','value_user','num_pods']].values.tolist(), done)
+            agent.remember(state[['value_cpu','value_user','num_pods']].values.tolist(), action, reward, next_state[['value_cpu','value_user','num_pods']].values.tolist())
 
             # Update the state
             state = next_state
 
             # Check if episode is finished
-            print("Episode: {}/{}, step: {}, action: {}, reward: {}, done: {}".format(episode, num_episodes, t, action, reward, done))
-            if done:
-                break
+            print("Episode: {}/{}, step: {}, action: {}, reward: {}".format(episode, num_episodes, t, action, reward))
+         
 
             # Train the agent
             if len(agent.memory) > batch_size:
