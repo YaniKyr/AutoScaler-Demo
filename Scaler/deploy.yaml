@@ -48,11 +48,11 @@ metadata:
 spec:
   scaleTargetRef:
     name: productpage-v1
-  cooldownPeriod:  3
+  cooldownPeriod: 1
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:
   - type: external-push
     metadata:
       scalerAddress: auto-scaler.app:50051
-      metricName: "constant_metric"
+      

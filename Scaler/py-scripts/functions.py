@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 class Prometheufunctions:
     def __init__(self):
-        self.prom = PrometheusConnect(url="http://10.152.183.212:9090", disable_ssl=True)
+        self.prom = PrometheusConnect(url="http://10.152.183.30:9090", disable_ssl=True)
         self.queries={
             "numpods": "count(up{namespace='app'})by (pod)",
             "userRequests": "sum(rate(istio_requests_total{pod=~'product.*'}[1m]))",
@@ -16,24 +16,18 @@ class Prometheufunctions:
 
     def query(self,query):
         #import ipdb; ipdb.set_trace()
-        data = self.prom.custom_query_range(query=query,step='1m',start_time=datetime.now() - timedelta(hours=1),end_time=datetime.now())
-        df = pd.DataFrame.from_dict(data[0]['values'])
-        df = df.rename(columns={0: 'timestamp', 1: 'value'})
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
-        df['value'] = df['value'].astype(float)
-        return df
-    
+        data = self.prom.custom_query(query=query)
+        metric = int(float(data[0]['value'][1]))
+        return metric
     def fetchState(self):
         
         cpu = self.query(self.queries['cpuUtil'])
         reqs = self.query(self.queries['userRequests'])
         pods = self.query(self.queries['numpods'])
         
-        merged_df = pd.merge(cpu, reqs, on='timestamp', suffixes=('_cpu', '_user'))
-        merged_df = pd.merge(merged_df, pods, on='timestamp')
-        merged_df = merged_df.rename(columns={'value': 'num_pods'})
         
-        return merged_df[:-2]
+        
+        return [cpu,reqs,pods]
         
 
     def liveness(self):
@@ -55,4 +49,4 @@ class Prometheufunctions:
             return 0
         return data[0]['value'][1]
     
-    
+print(Prometheufunctions().getRTT())
