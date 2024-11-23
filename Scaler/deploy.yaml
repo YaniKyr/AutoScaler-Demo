@@ -48,7 +48,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: productpage-v1
-  cooldownPeriod: 1
+  cooldownPeriod: 10
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:
