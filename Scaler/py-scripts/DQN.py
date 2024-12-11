@@ -27,7 +27,7 @@ class DQNAgent:
 
     def _build_model(self):
         model = Sequential()
-        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(24, input_dim=(self.state_size,), activation='relu'))
         model.add(Dense(24, activation='relu'))
         model.add(Dense(len(self.action), activation='linear'))
         model.compile(optimizer=Adam(), loss=MeanSquaredError())
@@ -48,23 +48,31 @@ class DQNAgent:
         return 1 / (1 + RTT / 250) if RTT < 250 else -0.5
 
     def replay(self, batch_size):
-        minibatch = np.random.choice(self.memory, batch_size, replace=False)
-        for state, action, reward, next_state in minibatch:
-            state, next_state = np.array([state]), np.array([next_state])
+        
+        minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
+       
+        for i in minibatch:
+            #should I add the action in the prediction??
+            state=np.array(self.memory[i][0])
+            action=self.memory[i][1] 
+            reward=self.memory[i][2] 
+            next_state= np.array(self.memory[i][3])
+
             target_q = reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[0])
             target = self.model.predict(state, verbose=0)
             target[0][self.action.index(action)] = target_q
-            self.model.fit(state, target, epochs=1, verbose=0)
+            self.model.fit(state, target, epochs=10, verbose=0)
+
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
 # Create the environment
 
 def Post(action):
-    cpods = Prometheufunctions().fetchState()[2]
+   
     target_pods = max(1, 2)
 
-    print(f"Applying action: {action}, Target pods: {target_pods}")
+    
     file = '/tmp/shared_file.json'
 
     # Write scaling action
@@ -74,7 +82,7 @@ def Post(action):
     # Wait for Kubernetes to reach the target
     start_time = time.time()
     while Prometheufunctions().fetchState()[2] != target_pods:
-        if time.time() - start_time > 60:  # Timeout after 60 seconds
+        if time.time() - start_time > 40:  # Timeout after 60 seconds
             print("Timeout waiting for pods to scale.")
             break
         time.sleep(1)
@@ -85,13 +93,14 @@ def main():
     data = Prometheufunctions()
       # Actions to take
     state = data.fetchState()  # Number of features
+    #print("Having State with data:", state,'\n and second handling:', data.fetchState()[2] )
     state_size  = 3
   
     # Initialize the DQN agent
     agent = DQNAgent(state_size)
 
     # Training loop
-    batch_size = 32
+    batch_size =32
     num_episodes = 100
     for episode in range(num_episodes):
         
@@ -104,9 +113,10 @@ def main():
             Post(action)
             next_state = data.fetchState()
             reward = agent.reward(data)
-            
+            #print(f'State: {state}, Action: {action}, Reward: {reward}, Next State {next_state}')
+            #print("Whole memory is:", agent.memory)
             # Remember the experience
-            agent.remember(state, action, reward, next_state)
+            agent.remember(state, int(action), reward, next_state)
 
             # Update the state
             state = next_state
