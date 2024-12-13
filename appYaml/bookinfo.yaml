@@ -325,6 +325,7 @@ spec:
       - name: productpage
         image: docker.io/istio/examples-bookinfo-productpage-v1:1.20.1
         imagePullPolicy: IfNotPresent
+        #add resource limits for the cpu scaler
         ports:
         - containerPort: 9080
         volumeMounts:
