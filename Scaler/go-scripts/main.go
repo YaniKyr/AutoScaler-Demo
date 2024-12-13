@@ -60,7 +60,7 @@ func (e *ExternalScaler) StreamIsActive(ref *pb.ScaledObjectRef, stream pb.Exter
 		select {
 		case <-stream.Context().Done():
 			return nil
-		case <-time.After(1 * time.Second / 1000):
+		case <-time.After(100 * time.Millisecond):
 			value, err := getData()
 			if err != nil {
 				fmt.Println("Error getting value:", err)

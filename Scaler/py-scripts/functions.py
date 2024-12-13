@@ -9,7 +9,7 @@ class Prometheufunctions:
         self.queries={
             "numpods": "count(up{pod=~'product.*'})",
             "userRequests": "sum(rate(istio_requests_total{pod=~'product.*'}[1m]))",
-            "cpuUtil": "avg(rate(container_cpu_usage_seconds_total{container='productpage'}[1m]) * 1000)",
+            "cpuUtil": "avg(rate(container_cpu_usage_seconds_total{container='productpage'}[1m]) * 100)",
             "RT_obs": "histogram_quantile(0.95, sum by(le) (rate(istio_request_duration_milliseconds_bucket{destination_app='productpage'}[1m])))"
         }
         

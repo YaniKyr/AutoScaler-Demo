@@ -7,7 +7,7 @@ import gevent
 
 # Parameters
 n_users = 100  # Max users
-n_timesteps = 10 # Number of time steps in the dataset
+n_timesteps = 1000 # Number of time steps in the dataset
 timestep_min = 1  # Minimum timestep in seconds
 timestep_max = 10  # Maximum timestep in seconds
 start_end_period_seconds = 0.1 * 60  # 10 minutes in seconds
@@ -53,12 +53,13 @@ plt.title('User Activity Over Time with Dome-shaped Pattern')
 plt.xlabel('Timestamp (seconds)')
 plt.ylabel('Number of Active Users')
 plt.grid(True)
-plt.show()
-print(data.head())
-print(data.head())
+plt.savefig('Input_data.png')
+data['wait_time'] = data['Timestamp'].diff().fillna(0)
+data.to_csv('op_data.csv',index=False)
+
 # Locust setup
 class UserBehavior(HttpUser):
-    wait_time = between(1, 2)  # Time between requests
+    wait_time = between(0.5,1)  # Time between requests
     host = "http://localhost:8080"  # Set the base host
 
     @task
@@ -70,7 +71,7 @@ def adjust_user_count(environment):
         current_user_count = row['Activity']
         # Adjust the number of users
         environment.runner.start(current_user_count, spawn_rate=10)
-        gevent.sleep(row['Timestamp'] - (row['Timestamp'] - row['Timestamp']))
+        gevent.sleep(row['wait_time'])
 
 # Start Locust with periodic user count adjustment
 @events.init.add_listener

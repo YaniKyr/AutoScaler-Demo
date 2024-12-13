@@ -9,8 +9,7 @@ from collections import deque
 import os
 import tensorflow as tf
 import time
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-tf.get_logger().setLevel('ERROR')
+
 
 
 # Define the DQN agent class
@@ -22,12 +21,13 @@ class DQNAgent:
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
-        self.action = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
+        self.action = [-2, -1, 0, 1, 2]
         self.model = self._build_model()
 
     def _build_model(self):
+        print(f'At build model State size: {self.state_size}')
         model = Sequential()
-        model.add(Dense(24, input_dim=(self.state_size,), activation='relu'))
+        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
         model.add(Dense(24, activation='relu'))
         model.add(Dense(len(self.action), activation='linear'))
         model.compile(optimizer=Adam(), loss=MeanSquaredError())
@@ -45,23 +45,31 @@ class DQNAgent:
 
     def reward(self, data):
         RTT = int(round(float(data.getRTT())))
-        return 1 / (1 + RTT / 250) if RTT < 250 else -0.5
+        return data.fetchState()[0] *  (1 / (1 + RTT / 250) if RTT < 250 else -1)
 
     def replay(self, batch_size):
         
         minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
-       
+
         for i in minibatch:
             #should I add the action in the prediction??
-            state=np.array(self.memory[i][0])
+            state=np.array([self.memory[i][0]])
             action=self.memory[i][1] 
             reward=self.memory[i][2] 
-            next_state= np.array(self.memory[i][3])
+            next_state= np.array([self.memory[i][3]])
 
-            target_q = reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[0])
-            target = self.model.predict(state, verbose=0)
-            target[0][self.action.index(action)] = target_q
-            self.model.fit(state, target, epochs=10, verbose=0)
+            print(f'At replay have state: {state} and next state {next_state}')
+
+            q_values = self.model.predict(next_state, verbose=0)
+
+            target_q = reward + self.gamma * np.amax(q_values[0])
+
+            
+
+            q_values[0][action] = target_q
+
+           
+            self.model.fit(state, q_values, epochs=4, verbose=0)
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
@@ -70,7 +78,7 @@ class DQNAgent:
 
 def Post(action):
    
-    target_pods = max(1, 2)
+    target_pods = max(1, min(Prometheufunctions().fetchState()[2] + action, 10))
 
     
     file = '/tmp/shared_file.json'
@@ -80,16 +88,17 @@ def Post(action):
         json.dump({'action': int(target_pods)}, file)
 
     # Wait for Kubernetes to reach the target
-    start_time = time.time()
+    
     while Prometheufunctions().fetchState()[2] != target_pods:
-        if time.time() - start_time > 40:  # Timeout after 60 seconds
-            print("Timeout waiting for pods to scale.")
-            break
-        time.sleep(1)
+       
+        print("Timeout waiting for pods to scale.")
+        
+        time.sleep(5)
 
 
 
 def main():
+    
     data = Prometheufunctions()
       # Actions to take
     state = data.fetchState()  # Number of features
@@ -128,4 +137,6 @@ def main():
 
 
 if __name__ == '__main__':
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    tf.get_logger().setLevel('ERROR')
     main()
