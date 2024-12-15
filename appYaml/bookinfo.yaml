@@ -304,7 +304,7 @@ metadata:
     app: productpage
     version: v1
 spec:
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
       app: productpage
@@ -331,6 +331,11 @@ spec:
         volumeMounts:
         - name: tmp
           mountPath: /tmp
+        resources:
+          requests:
+            cpu: "500m"
+          limits:
+            cpu: "500m"
       volumes:
       - name: tmp
         emptyDir: {}
