@@ -68,15 +68,15 @@ func (e *ExternalScaler) StreamIsActive(ref *pb.ScaledObjectRef, stream pb.Exter
 			}		
 				
 
-			if value !=0  {
+			
 				err = stream.Send(&pb.IsActiveResponse{
-					Result: true,
+					Result: value>0,
 				})
 				if err != nil {
 					fmt.Println("Error sending stream response:", err)
 					return err
 				}
-			}
+			
 		}
 	}
 }
@@ -99,7 +99,7 @@ func (e *ExternalScaler) GetMetrics(ctx context.Context, req *pb.GetMetricsReque
 		fmt.Println(err)
 		return nil, err
 	}
-
+	log.Printf("Returning metric value: %d (desired pods: %d)",desired*100,desired)
 	return &pb.GetMetricsResponse{
 		MetricValues: []*pb.MetricValue{{
 			MetricName:  "constant_metric",

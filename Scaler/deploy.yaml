@@ -47,12 +47,21 @@ metadata:
   namespace: app
 spec:
   scaleTargetRef:
-    name: productpage-v1
-  cooldownPeriod: 10
-  minReplicaCount: 1
-  maxReplicaCount: 10
+    name: productpage-v1        
+  cooldownPeriod: 5     
+  minReplicaCount: 1            
+  maxReplicaCount: 8       
   triggers:
-  - type: external-push
+  - type: external-push         
     metadata:
       scalerAddress: auto-scaler.app:50051
-      
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 5
+          selectPolicy: Max
+          policies:    
+          - type: Pods
+            value: 1
+            periodSeconds: 5
