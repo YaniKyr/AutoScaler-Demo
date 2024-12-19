@@ -72,7 +72,7 @@ class DQNAgent:
             q_values[0][action] = target_q
 
             # Train the model
-            history = self.model.fit(state, q_values, epochs=4, verbose=0)
+            history = self.model.fit(state, q_values, epochs=10)
             loss = history.history['loss'][0]
             losses.append(loss)
             rewards.append(reward)
@@ -129,7 +129,7 @@ def main():
         action = False
         while not action:
             action = Post(agent, state, step_count)
-        time.wait(60)
+        time.sleep(40)
         next_state = data.fetchState()
         reward = agent.reward(data)
 
