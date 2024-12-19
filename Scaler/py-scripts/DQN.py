@@ -4,7 +4,8 @@ from functions import Prometheufunctions
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense  #type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
-from tensorflow.keras.losses import MeanSquaredError # type: ignore
+from tensorflow.keras.losses import MeanSquaredError  # type: ignore
+from tensorflow.keras.losses import Huber  # type: ignore
 from collections import deque
 import os
 import tensorflow as tf
@@ -22,8 +23,8 @@ class DQNAgent:
         self.epsilon_decay = 0.995
         self.action = [-2, -1, 0, 1, 2]
         self.model = self._build_model()
-        self.target_model = self._build_model()  # Target network
-        self.update_target_model()  # Initialize target model
+        self.target_model = self._build_model() 
+        self.update_target_model()  
 
     def _build_model(self):
         #print(f'At build model State size: {self.state_size}')
@@ -32,7 +33,7 @@ class DQNAgent:
         model.add(Dense(32, activation='relu'))
         model.add(Dense(16, activation='relu'))
         model.add(Dense(len(self.action), activation='linear'))
-        model.compile(optimizer=Adam(), loss=MeanSquaredError())
+        model.compile(optimizer=Adam(learning_rate=0.001), loss=Huber())
         return model
 
     def update_target_model(self):
@@ -44,7 +45,7 @@ class DQNAgent:
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
-            return np.random.choice(self.action)
+            return np.random.choice(self.action,p=[0.15,0.25,0.3,0.20,0.1])
         state = np.array([state])  # Add batch dimension
         q_values = self.model.predict(state, verbose=0)
         return self.action[np.argmax(q_values[0])]
@@ -101,7 +102,7 @@ def Post(agent,state,step_count):
     
     while Prometheufunctions().fetchState()[2] != target_pods:
         elapsed_time = time.time() - start_time  # Calculate the elapsed time
-        if elapsed_time > 20:
+        if elapsed_time > 60:
             print("Timeout exceeded while waiting for pods to scale.")
             return False
             #print("Timeout waiting for pods to scale.")
@@ -115,41 +116,36 @@ def main():
     state_size = 3
     agent = DQNAgent(state_size)
 
-    batch_size = 32
-    num_episodes = 2000
-    replay_frequency = 80
-    target_update_frequency = 50  
+    batch_size = 64
+    replay_frequency = 40
+    target_update_frequency = 120
     step_count = 0
 
-    for episode in range(num_episodes):
-        state = data.fetchState()
-        for t in range(500):
-            step_count += 1
 
-            # Choose an action
-           
+    while 1:
+        step_count += 1
+        
+        # Perform the action
+        action = False
+        while not action:
+            action = Post(agent, state, step_count)
+        time.wait(60)
+        next_state = data.fetchState()
+        reward = agent.reward(data)
 
-            # Perform the action
-            action = False
-            while not action:
-                action = Post(agent, state, step_count)
+        # Remember the experience
+        agent.remember(state, int(action), reward, next_state)
+        state = next_state
+        
+        # Train the agent (experience replay) 
+        if len(agent.memory) > batch_size and step_count % replay_frequency == 0:
+            print("To do training")
+            agent.replay(batch_size)
 
-            next_state = data.fetchState()
-            reward = agent.reward(data)
-
-            # Remember the experience
-            agent.remember(state, int(action), reward, next_state)
-            state = next_state
-            
-            # Train the agent (experience replay) 
-            if len(agent.memory) > batch_size and step_count % replay_frequency == 0:
-                print("To do training")
-                agent.replay(batch_size)
-
-            # Update the target network every 100 steps
-            if step_count % target_update_frequency == 0:
-                print("Updating Values of Target!")
-                agent.update_target_model()
+        # Update the target network every 100 steps
+        if step_count % target_update_frequency == 0:
+            print("Updating Values of Target!")
+            agent.update_target_model()
 
 if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
