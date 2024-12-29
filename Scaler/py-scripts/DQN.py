@@ -47,7 +47,7 @@ class DQNAgent:
         if np.random.rand() <= self.epsilon:
             return np.random.choice(self.action,p=[0.15,0.25,0.3,0.20,0.1])
         state = np.array([state])  # Add batch dimension
-        q_values = self.model.predict(state, verbose=0)
+        q_values = self.model.predict(state, verbose=1)
         return self.action[np.argmax(q_values[0])]
 
     def reward(self, data):
@@ -64,11 +64,11 @@ class DQNAgent:
             next_state = np.array([self.memory[i][3]])
 
             # Predict Q-values for next state using the target network
-            q_values_next = self.target_model.predict(next_state, verbose=0)
+            q_values_next = self.target_model.predict(next_state, verbose=1)
             target_q = reward + self.gamma * np.amax(q_values_next[0])
 
             # Update Q-value for the selected action
-            q_values = self.model.predict(state, verbose=0)
+            q_values = self.model.predict(state, verbose=1)
             q_values[0][action] = target_q
 
             # Train the model
@@ -117,8 +117,8 @@ def main():
     agent = DQNAgent(state_size)
 
     batch_size = 64
-    replay_frequency = 40
-    target_update_frequency = 120
+    replay_frequency = 64
+    target_update_frequency = 50
     step_count = 0
 
 
@@ -129,7 +129,7 @@ def main():
         action = False
         while not action:
             action = Post(agent, state, step_count)
-        time.sleep(40)
+        time.sleep(180)
         next_state = data.fetchState()
         reward = agent.reward(data)
 
@@ -144,8 +144,10 @@ def main():
 
         # Update the target network every 100 steps
         if step_count % target_update_frequency == 0:
+            
             print("Updating Values of Target!")
             agent.update_target_model()
+            
 
 if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
