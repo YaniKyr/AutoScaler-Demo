@@ -36,10 +36,9 @@ class DQNAgent:
         model.compile(optimizer=Adam(learning_rate=0.001), loss=Huber())
         return model
 
-    def update_target_model(self):
-        
+    def update_target_model(self):        
         self.target_model.set_weights(self.model.get_weights())
-
+        self.model.save_weights('scaler.weights.h5')
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))
 
@@ -124,12 +123,13 @@ def main():
 
     while 1:
         step_count += 1
-        
+        if step_count==1 and os.path.exists('Scaler.weights.h5'):
+            agent.model.load_weights('Scaler.weights.h5')
         # Perform the action
         action = False
         while not action:
             action = Post(agent, state, step_count)
-        time.sleep(180)
+        time.sleep(30)
         next_state = data.fetchState()
         reward = agent.reward(data)
 
