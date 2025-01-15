@@ -18,9 +18,9 @@ class DQNAgent:
         self.state_size = state_size
         self.memory = deque(maxlen=2000)
         self.gamma = 0.9
-        self.epsilon = 1.0
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon = 0.8
+        self.epsilon_min = 0.005
+        self.epsilon_decay = 0.95
         self.action = [-2, -1, 0, 1, 2]
         self.model = self._build_model()
         self.target_model = self._build_model() 
@@ -115,9 +115,9 @@ def main():
     state_size = 3
     agent = DQNAgent(state_size)
 
-    batch_size = 64
-    replay_frequency = 64
-    target_update_frequency = 50
+    batch_size = 16
+    replay_frequency = 16
+    target_update_frequency = 10
     step_count = 0
 
 

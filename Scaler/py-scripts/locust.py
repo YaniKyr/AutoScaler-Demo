@@ -6,8 +6,8 @@ from locust import HttpUser, task, between, events
 import gevent
 
 # Parameters
-n_users = 100  # Max users
-n_timesteps = 1500 # Number of time steps in the dataset
+n_users = 10  # Max users
+n_timesteps = 750 # Number of time steps in the dataset
 timestep_min = 1  # Minimum timestep in seconds
 timestep_max = 10  # Maximum timestep in seconds
 start_end_period_seconds = 10 * 60  # 10 minutes in seconds
