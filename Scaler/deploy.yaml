@@ -21,9 +21,9 @@ spec:
         resources:
           requests:
             cpu: "500m"
-            memory: "500Mi"
+            memory: "1Gi"
           limits:
-            memory: "600Mi"
+            memory: "1Gi"
         ports:
         - containerPort: 50051
 ---
@@ -48,7 +48,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: productpage-v1        
-  cooldownPeriod: 1     
+  cooldownPeriod: 6     
   minReplicaCount: 1            
   maxReplicaCount: 10           
   triggers:
@@ -59,21 +59,21 @@ spec:
     horizontalPodAutoscalerConfig:
       behavior:
         scaleUp:
-          stabilizationWindowSeconds: 1
+          stabilizationWindowSeconds: 10
           policies:
           - type: Percent
             value: 100                 
-            periodSeconds: 5       
+            periodSeconds: 15       
           - type: Pods
             value: 4
-            periodSeconds: 5
+            periodSeconds: 15
 
         scaleDown:
-          stabilizationWindowSeconds: 1
+          stabilizationWindowSeconds: 10
           policies:
           - type: Percent
             value: 100                 
-            periodSeconds: 5       
+            periodSeconds: 15       
           - type: Pods
             value: 4
-            periodSeconds: 5
+            periodSeconds: 15

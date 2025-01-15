@@ -18,8 +18,8 @@ class DQNAgent:
         self.state_size = state_size
         self.memory = deque(maxlen=2000)
         self.gamma = 0.9
-        self.epsilon = 0.8
-        self.epsilon_min = 0.005
+        self.epsilon = 1.0
+        self.epsilon_min = 0.01
         self.epsilon_decay = 0.95
         self.action = [-2, -1, 0, 1, 2]
         self.model = self._build_model()
@@ -45,14 +45,21 @@ class DQNAgent:
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             return np.random.choice(self.action,p=[0.15,0.25,0.3,0.20,0.1])
-        state = np.array([state])  # Add batch dimension
-        q_values = self.model.predict(state, verbose=1)
-        return self.action[np.argmax(q_values[0])]
+        try:
+            state = np.array([state])  # Add batch dimension
+            q_values = self.model.predict(state, verbose=1)
+            return self.action[np.argmax(q_values[0])]
+        except Exception as e:
+            print(f"Error fetching state:{e}")
+            return np.random.choice(self.action,p=[0.15,0.25,0.3,0.20,0.1])
 
     def reward(self, data):
-        RTT = int(round(float(data.getRTT())))
-        return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -2)
-
+        try:
+            RTT = int(round(float(data.getRTT())))
+            return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -2)
+        except Exception as e:
+            print(f'Error {e}, Prometheus Error, during data retrieval')
+            return 0
     def replay(self, batch_size):
         minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
         
@@ -63,11 +70,20 @@ class DQNAgent:
             next_state = np.array([self.memory[i][3]])
 
             # Predict Q-values for next state using the target network
-            q_values_next = self.target_model.predict(next_state, verbose=1)
+            try:
+                q_values_next = self.target_model.predict(next_state, verbose=1)
+                print(f'q_values_next = {q_values_next}')
+            except Exception as e:
+                print(f'Exception {e}, error during the target model prediction')
+                q_value_next = [0,0,0]
             target_q = reward + self.gamma * np.amax(q_values_next[0])
 
             # Update Q-value for the selected action
-            q_values = self.model.predict(state, verbose=1)
+            try:
+                q_values = self.model.predict(state, verbose=1)
+            except Exception as e:
+                print(f'Exception {e}, error during the init model prediction')
+                q_values = [0,0,0]
             q_values[0][action] = target_q
 
             # Train the model
@@ -101,23 +117,29 @@ def Post(agent,state,step_count):
     
     while Prometheufunctions().fetchState()[2] != target_pods:
         elapsed_time = time.time() - start_time  # Calculate the elapsed time
-        if elapsed_time > 60:
+        if elapsed_time > 30:
             print("Timeout exceeded while waiting for pods to scale.")
             return False
             #print("Timeout waiting for pods to scale.")
         
-        time.sleep(5)
+        time.sleep(1)
     return action
 
 def main():
     data = Prometheufunctions()
-    state = data.fetchState()
+    
+    try:
+        state = data.fetchState()
+    except Exception as e:
+        print(f'Error {e}, Prometheus Error, during data retrieval')
+        return [0,0,0]
+
     state_size = 3
     agent = DQNAgent(state_size)
 
-    batch_size = 16
-    replay_frequency = 16
-    target_update_frequency = 10
+    batch_size = 32
+    replay_frequency = 24
+    target_update_frequency = 20
     step_count = 0
 
 
@@ -130,7 +152,11 @@ def main():
         while not action:
             action = Post(agent, state, step_count)
         time.sleep(30)
-        next_state = data.fetchState()
+        try:
+            next_state = data.fetchState()
+        except Exception as e:
+            print(f'Error {e}, Prometheus Error, during data retrieval')
+            next_state=[0,0,0]
         reward = agent.reward(data)
 
         # Remember the experience
@@ -142,7 +168,6 @@ def main():
             print("To do training")
             agent.replay(batch_size)
 
-        # Update the target network every 100 steps
         if step_count % target_update_frequency == 0:
             
             print("Updating Values of Target!")
