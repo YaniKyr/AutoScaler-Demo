@@ -114,8 +114,17 @@ def Post(agent,state,step_count):
     start_time = time.time()
     #keda might have a bug. When reaching max Replicas e.g. 10 and trying to scale down to 9, it fails
     #to perform the operation. In the other hand all the other scaling actions work properly
-    
-    while Prometheufunctions().fetchState()[2] != target_pods:
+    while True:
+        try:
+            curr_state = Prometheufunctions().fetchState()[2] 
+        except Exception as e:
+            print(f'Error while fetching pods, encountered {e}')
+            time.sleep(1)
+            continue
+
+        if curr_state == target_pods:
+            break
+
         elapsed_time = time.time() - start_time  # Calculate the elapsed time
         if elapsed_time > 30:
             print("Timeout exceeded while waiting for pods to scale.")

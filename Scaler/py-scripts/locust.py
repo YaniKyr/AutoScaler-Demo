@@ -11,7 +11,7 @@ n_timesteps = 1100 # Number of time steps in the dataset
 timestep_min = 1  # Minimum timestep in seconds
 timestep_max = 10  # Maximum timestep in seconds
 start_end_period_seconds = 10 * 60  # 10 minutes in seconds
-start_end_user_range = (1, 5)  # User count during start/end period
+start_end_user_range = (15, 30)  # User count during start/end period
 
 # Generate time series data with a dome-shaped pattern and bursts
 timesteps = [random.randint(timestep_min, timestep_max) for _ in range(n_timesteps)]
