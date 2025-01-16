@@ -18,7 +18,7 @@ class DQNAgent:
         self.state_size = state_size
         self.memory = deque(maxlen=2000)
         self.gamma = 0.9
-        self.epsilon = 1.0
+        self.epsilon = 0.63
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.95
         self.action = [-2, -1, 0, 1, 2]
@@ -44,7 +44,7 @@ class DQNAgent:
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
-            return np.random.choice(self.action,p=[0.15,0.25,0.3,0.20,0.1])
+            return np.random.choice(self.action)
         try:
             state = np.array([state])  # Add batch dimension
             q_values = self.model.predict(state, verbose=1)
@@ -87,14 +87,17 @@ class DQNAgent:
             q_values[0][action] = target_q
 
             # Train the model
-            history = self.model.fit(state, q_values, epochs=10)
+            history = self.model.fit(state, q_values, epochs=10,verbose = 1)
             loss = history.history['loss'][0]
             losses.append(loss)
             rewards.append(reward)
 
         # Log metrics
         print(f"Average Loss: {np.mean(losses)}, Recent Reward: {reward}")
-
+        print(f"========================After Training=============================")
+        print(f"Values before decay:")
+        print(f"Epsilon: {self.epsilon}, Epsilon Decay: {self.epsilon_decay}, Epsilon Min: {self.epsilon_min}")
+        print(f"===================================================================")
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
@@ -103,7 +106,7 @@ def Post(agent,state,step_count):
     action = agent.act(state)
     target_pods = max(1, min(Prometheufunctions().fetchState()[2] + action, 10))
 
-    print(f'Step of Randomnes {step_count}')
+    print(f'Step of Randomnes {step_count}, with Action={action} and State: {state}, Going to scale to: {target_pods}')
     file = '/tmp/shared_file.json'
 
     # Write scaling action
@@ -123,16 +126,16 @@ def Post(agent,state,step_count):
             continue
 
         if curr_state == target_pods:
-            break
+            return action, True
+
 
         elapsed_time = time.time() - start_time  # Calculate the elapsed time
-        if elapsed_time > 30:
-            print("Timeout exceeded while waiting for pods to scale.")
-            return False
+        if elapsed_time > 40:
+            print("! Error: Timeout exceeded while waiting for pods to scale! Restarting...")
+            return 0,False
             #print("Timeout waiting for pods to scale.")
         
         time.sleep(1)
-    return action
 
 def main():
     data = Prometheufunctions()
@@ -147,8 +150,8 @@ def main():
     agent = DQNAgent(state_size)
 
     batch_size = 32
-    replay_frequency = 24
-    target_update_frequency = 20
+    replay_frequency = 32
+    target_update_frequency = 26
     step_count = 0
 
 
@@ -157,11 +160,20 @@ def main():
         if step_count==1 and os.path.exists('Scaler.weights.h5'):
             agent.model.load_weights('Scaler.weights.h5')
         # Perform the action
-        action = False
-        while not action:
-            action = Post(agent, state, step_count)
-        time.sleep(30)
+        action = 0
+        flag =False
+        while not flag:
+            action,flag = Post(agent, state, step_count)
+        if action < 0:
+            print("---->Scaled down Saccessfuly")
+        elif action > 0: 
+            print("---->Scaled up Saccessfuly")
+        else:
+            print("---->Remaining in the same replica count")
+        print('Sleeping 90s')
+        time.sleep(90)
         try:
+            print("---->Fetching Data for the next state...")
             next_state = data.fetchState()
         except Exception as e:
             print(f'Error {e}, Prometheus Error, during data retrieval')
@@ -174,7 +186,7 @@ def main():
         
         # Train the agent (experience replay) 
         if len(agent.memory) > batch_size and step_count % replay_frequency == 0:
-            print("To do training")
+            print("Training...")
             agent.replay(batch_size)
 
         if step_count % target_update_frequency == 0:

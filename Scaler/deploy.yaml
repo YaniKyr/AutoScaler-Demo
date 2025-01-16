@@ -48,7 +48,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: productpage-v1        
-  cooldownPeriod: 6     
+  cooldownPeriod: 10     
   minReplicaCount: 1            
   maxReplicaCount: 10           
   triggers:
@@ -63,17 +63,17 @@ spec:
           policies:
           - type: Percent
             value: 100                 
-            periodSeconds: 15       
+            periodSeconds: 12       
           - type: Pods
             value: 4
-            periodSeconds: 15
+            periodSeconds: 12
 
         scaleDown:
           stabilizationWindowSeconds: 10
           policies:
           - type: Percent
             value: 100                 
-            periodSeconds: 15       
+            periodSeconds: 12      
           - type: Pods
             value: 4
-            periodSeconds: 15
+            periodSeconds: 12
