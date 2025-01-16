@@ -16,11 +16,12 @@ rewards = []
 class DQNAgent:
     def __init__(self, state_size):
         self.state_size = state_size
-        self.memory = deque(maxlen=2000)
+        self.memory = deque(maxlen=5000)
+        self.rewards = []
         self.gamma = 0.9
-        self.epsilon = 0.63
+        self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.95
+        self.epsilon_decay = 0.9
         self.action = [-2, -1, 0, 1, 2]
         self.model = self._build_model()
         self.target_model = self._build_model() 
@@ -50,7 +51,7 @@ class DQNAgent:
             q_values = self.model.predict(state, verbose=1)
             return self.action[np.argmax(q_values[0])]
         except Exception as e:
-            print(f"Error fetching state:{e}")
+            print(f"/!\ Error fetching state:{e}")
             return np.random.choice(self.action,p=[0.15,0.25,0.3,0.20,0.1])
 
     def reward(self, data):
@@ -58,7 +59,7 @@ class DQNAgent:
             RTT = int(round(float(data.getRTT())))
             return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -2)
         except Exception as e:
-            print(f'Error {e}, Prometheus Error, during data retrieval')
+            print(f'/!\ Error {e}, Prometheus Error, during data retrieval')
             return 0
     def replay(self, batch_size):
         minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
@@ -74,7 +75,7 @@ class DQNAgent:
                 q_values_next = self.target_model.predict(next_state, verbose=1)
                 print(f'q_values_next = {q_values_next}')
             except Exception as e:
-                print(f'Exception {e}, error during the target model prediction')
+                print(f'/!\ Exception {e}, error during the target model prediction')
                 q_value_next = [0,0,0]
             target_q = reward + self.gamma * np.amax(q_values_next[0])
 
@@ -82,7 +83,7 @@ class DQNAgent:
             try:
                 q_values = self.model.predict(state, verbose=1)
             except Exception as e:
-                print(f'Exception {e}, error during the init model prediction')
+                print(f'/!\ Exception {e}, error during the init model prediction')
                 q_values = [0,0,0]
             q_values[0][action] = target_q
 
@@ -90,7 +91,7 @@ class DQNAgent:
             history = self.model.fit(state, q_values, epochs=10,verbose = 1)
             loss = history.history['loss'][0]
             losses.append(loss)
-            rewards.append(reward)
+            self.rewards.append(reward)
 
         # Log metrics
         print(f"Average Loss: {np.mean(losses)}, Recent Reward: {reward}")
@@ -98,15 +99,26 @@ class DQNAgent:
         print(f"Values before decay:")
         print(f"Epsilon: {self.epsilon}, Epsilon Decay: {self.epsilon_decay}, Epsilon Min: {self.epsilon_min}")
         print(f"===================================================================")
+        save_rewards_to_file(self.rewards)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+
+
+def save_rewards_to_file(rewards, filename='rewards.json'):
+    try:
+        with open(filename, 'w') as f:
+            json.dump(rewards, f)
+        print(f"------>Rewards successfully saved to {filename}")
+    except Exception as e:
+        print(f"/!\ Error saving rewards: {e}")
 
 
 def Post(agent,state,step_count):
     action = agent.act(state)
     target_pods = max(1, min(Prometheufunctions().fetchState()[2] + action, 10))
 
-    print(f'Step of Randomnes {step_count}, with Action={action} and State: {state}, Going to scale to: {target_pods}')
+    print(f'@@ Step of Randomnes {step_count}, with Action={action} and State: {state}, Going to scale to: {target_pods}')
     file = '/tmp/shared_file.json'
 
     # Write scaling action
@@ -121,7 +133,7 @@ def Post(agent,state,step_count):
         try:
             curr_state = Prometheufunctions().fetchState()[2] 
         except Exception as e:
-            print(f'Error while fetching pods, encountered {e}')
+            print(f'/!\ Error while fetching pods, encountered {e}')
             time.sleep(1)
             continue
 
@@ -131,7 +143,7 @@ def Post(agent,state,step_count):
 
         elapsed_time = time.time() - start_time  # Calculate the elapsed time
         if elapsed_time > 40:
-            print("! Error: Timeout exceeded while waiting for pods to scale! Restarting...")
+            print("/!\ Error: Timeout exceeded while waiting for pods to scale! Restarting...")
             return 0,False
             #print("Timeout waiting for pods to scale.")
         
@@ -143,7 +155,7 @@ def main():
     try:
         state = data.fetchState()
     except Exception as e:
-        print(f'Error {e}, Prometheus Error, during data retrieval')
+        print(f'/!\ Error {e}, Prometheus Error, during data retrieval')
         return [0,0,0]
 
     state_size = 3
@@ -170,13 +182,13 @@ def main():
             print("---->Scaled up Saccessfuly")
         else:
             print("---->Remaining in the same replica count")
-        print('Sleeping 90s')
-        time.sleep(90)
+        print('* Stabilizing for 30 secs...')
+        time.sleep(30)
         try:
             print("---->Fetching Data for the next state...")
             next_state = data.fetchState()
         except Exception as e:
-            print(f'Error {e}, Prometheus Error, during data retrieval')
+            print(f'/!\ Error {e}, Prometheus Error, during data retrieval')
             next_state=[0,0,0]
         reward = agent.reward(data)
 
@@ -185,13 +197,13 @@ def main():
         state = next_state
         
         # Train the agent (experience replay) 
-        if len(agent.memory) > batch_size and step_count % replay_frequency == 0:
-            print("Training...")
+        if len(agent.memory) >= batch_size and step_count % replay_frequency == 0:
+            print("* Training...")
             agent.replay(batch_size)
 
         if step_count % target_update_frequency == 0:
             
-            print("Updating Values of Target!")
+            print("* Updating Values of Target!")
             agent.update_target_model()
             
 
