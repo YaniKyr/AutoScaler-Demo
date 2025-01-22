@@ -50,7 +50,7 @@ spec:
     name: productpage-v1        
   cooldownPeriod: 3     
   minReplicaCount: 1            
-  maxReplicaCount: 10           
+  maxReplicaCount: 9           
   triggers:
   - type: external-push         
     metadata:
@@ -73,7 +73,7 @@ spec:
           policies:
           - type: Percent
             value: 100                 
-            periodSeconds: 5     
+            periodSeconds: 2     
           - type: Pods
             value: 4
-            periodSeconds: 5
+            periodSeconds: 2
