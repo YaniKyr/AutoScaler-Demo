@@ -94,7 +94,7 @@ class DQNAgent:
             self.rewards.append(reward)
 
         # Log metrics
-        print(f"Average Loss: {np.mean(losses)}, Recent Reward: {reward}")
+        print(f"Average Loss: {np.mean(losses)}, Recent Reward: {np.mean(self.rewards)}")
         print(f"========================After Training=============================")
         print(f"Values before decay:")
         print(f"Epsilon: {self.epsilon}, Epsilon Decay: {self.epsilon_decay}, Epsilon Min: {self.epsilon_min}")
@@ -142,12 +142,13 @@ def Post(agent,state,step_count):
 
 
         elapsed_time = time.time() - start_time  # Calculate the elapsed time
-        if elapsed_time > 40:
+        #Grace Period
+        if elapsed_time > 60:
             print("/!\ Error: Timeout exceeded while waiting for pods to scale! Restarting...")
             return 0,False
             #print("Timeout waiting for pods to scale.")
         
-        time.sleep(1)
+        time.sleep(5)
 
 def main():
     data = Prometheufunctions()
@@ -161,9 +162,9 @@ def main():
     state_size = 3
     agent = DQNAgent(state_size)
 
-    batch_size = 32
-    replay_frequency = 32
-    target_update_frequency = 26
+    batch_size = 160
+    replay_frequency = 160
+    target_update_frequency = 100
     step_count = 0
 
 

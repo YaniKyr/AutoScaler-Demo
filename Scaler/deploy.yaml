@@ -48,7 +48,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: productpage-v1        
-  cooldownPeriod: 10     
+  cooldownPeriod: 3     
   minReplicaCount: 1            
   maxReplicaCount: 10           
   triggers:
@@ -59,21 +59,21 @@ spec:
     horizontalPodAutoscalerConfig:
       behavior:
         scaleUp:
-          stabilizationWindowSeconds: 10
+          stabilizationWindowSeconds: 1
           policies:
           - type: Percent
             value: 100                 
-            periodSeconds: 12       
+            periodSeconds: 5       
           - type: Pods
             value: 4
-            periodSeconds: 12
+            periodSeconds: 5
 
         scaleDown:
-          stabilizationWindowSeconds: 10
+          stabilizationWindowSeconds: 1
           policies:
           - type: Percent
             value: 100                 
-            periodSeconds: 12      
+            periodSeconds: 5     
           - type: Pods
             value: 4
-            periodSeconds: 12
+            periodSeconds: 5
