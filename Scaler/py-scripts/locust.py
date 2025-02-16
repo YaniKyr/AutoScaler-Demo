@@ -64,7 +64,8 @@ class UserBehavior(HttpUser):
 
     @task
     def my_task(self):
-        self.client.get("/productpage") 
+        for _ in range(12):
+            self.client.get("/productpage") 
 
 def adjust_user_count(environment):
     for _, row in data.iterrows():
