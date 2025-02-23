@@ -46,14 +46,8 @@ class DQNAgent:
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
-            cpu_z = [ (state[0] * state[2])/max(state[2]+i,1)  for i in self.action]
-            maxc = 0
-            midx = 0
-            for idx, cpu in enumerate(cpu_z):
-                if maxc <  cpu and cpu <=40:
-                    maxc = cpu
-                    midx = idx
-            return self.action[midx]
+            cpu_z = [(state[0] * state[2]) / max(state[2] + i, 1) for i in self.action]
+            return self.action[max((idx for idx, cpu in enumerate(cpu_z) if cpu < 40), key=lambda idx: cpu_z[idx], default=0)]
         try:
             state = np.array([state])  # Add batch dimension
             q_values = self.model.predict(state, verbose=1)
