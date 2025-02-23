@@ -22,7 +22,7 @@ class DQNAgent:
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.9
-        self.action = [-1, 0, 1]
+        self.action = [-2, -1, 0, 1, 2]
         self.model = self._build_model()
         self.target_model = self._build_model() 
         self.update_target_model()  
@@ -46,7 +46,14 @@ class DQNAgent:
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
-            return np.random.choice(self.action)
+            cpu_z = [ (state[0] * state[2])/max(state[2]+i,1)  for i in self.action]
+            maxc = 0
+            midx = 0
+            for idx, cpu in enumerate(cpu_z):
+                if maxc <  cpu and cpu <=40:
+                    maxc = cpu
+                    midx = idx
+            return self.action[midx]
         try:
             state = np.array([state])  # Add batch dimension
             q_values = self.model.predict(state, verbose=1)
@@ -58,7 +65,7 @@ class DQNAgent:
     def reward(self, data):
         try:
             RTT = int(round(float(data.getRTT())))
-            return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -2)
+            return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -200)
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
             return 0
@@ -179,8 +186,8 @@ def main():
             print("\u2705 Scaled up Saccessfuly")
         else:
             print("\u2705 Remaining in the same replica count")
-        print('\U0001F504 Stabilizing for 30 secs...')
-        time.sleep(120)
+        print('\U0001F504 Stabilizing for 60 secs...')
+        time.sleep(60)
         try:
             print("\U0001F504 Fetching Data for the next state...")
             next_state = data.fetchState()
