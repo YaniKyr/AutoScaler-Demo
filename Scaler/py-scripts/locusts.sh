@@ -4,5 +4,5 @@ source ~/locust/bin/activate
 while true
 do
 	echo "Startin locust at $(date)."
-	locust -f locust.py --headless -t 1h30m
+	locust -f locust.py --headless -t 2h
 done

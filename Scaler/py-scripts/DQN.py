@@ -22,7 +22,7 @@ class DQNAgent:
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.9
-        self.action = [-2, -1, 0, 1, 2]
+        self.action = [-1, 0, 1]
         self.model = self._build_model()
         self.target_model = self._build_model() 
         self.update_target_model()  
@@ -40,6 +40,7 @@ class DQNAgent:
     def update_target_model(self):        
         self.target_model.set_weights(self.model.get_weights())
         self.model.save_weights('scaler.weights.h5')
+
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))
 
@@ -52,7 +53,7 @@ class DQNAgent:
             return self.action[np.argmax(q_values[0])]
         except Exception as e:
             print(f"\u26A0 Error fetching state:{e}")
-            return np.random.choice(self.action,p=[0.15,0.25,0.3,0.20,0.1])
+            return np.random.choice(self.action,p=[0.35,0.4,0.25])
 
     def reward(self, data):
         try:
@@ -61,40 +62,35 @@ class DQNAgent:
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
             return 0
+
     def replay(self, batch_size):
+
+        if len(self.memory) < batch_size:
+            return
+
         minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
+        states = np.array([self.memory[i][0] for i in minibatch])
+        next_states = np.array([self.memory[i][3] for i in minibatch])
+        try:        
+            q_values = self.model.predict(states, verbose=0)
+            q_values_next = self.target_model.predict(next_states, verbose=0)
+        except Exception as e:
+            print(f'\u26A0 Exception {e}, error during the target model prediction')
+
+        for idx, i in enumerate(minibatch):
+            _,action, reward, _ = self.memory[i]
+            target_q = reward + self.gamma * np.amax(q_values_next[idx])
+            q_values[idx][action] = target_q
         
-        for i in minibatch:
-            state = np.array([self.memory[i][0]])
-            action = self.memory[i][1]
-            reward = self.memory[i][2]
-            next_state = np.array([self.memory[i][3]])
-
-            # Predict Q-values for next state using the target network
-            try:
-                q_values_next = self.target_model.predict(next_state, verbose=0)
-                print(f'q_values_next = {q_values_next}')
-            except Exception as e:
-                print(f'\u26A0 Exception {e}, error during the target model prediction')
-                q_value_next = [0,0,0]
-            target_q = reward + self.gamma * np.amax(q_values_next[0])
-
-            # Update Q-value for the selected action
-            try:
-                q_values = self.model.predict(state, verbose=0)
-            except Exception as e:
-                print(f'\u26A0 Exception {e}, error during the init model prediction')
-                q_values = [0,0,0]
-            q_values[0][action] = target_q
-
-            # Train the model
-            history = self.model.fit(state, q_values, epochs=10,verbose = 0)
-            loss = history.history['loss'][0]
-            losses.append(loss)
-            self.rewards.append(reward)
-
-        # Log metrics
-        print(f"Average Loss: {np.mean(losses)}, Recent Reward: {np.mean(self.rewards)}")
+        # Train the model
+        history = self.model.fit(states, q_values, epochs=10,verbose = 0)
+        loss = history.history['loss'][-1]
+        losses.append(loss)
+        batch_rewards = [self.memory[i][2] for i in minibatch]
+        avg_reward = np.mean(batch_rewards)
+        rewards.append(avg_reward)
+        
+        print(f"Replay - Avg Loss: {loss:.4f}, Avg Reward: {avg_reward:.4f}")
         print(f"========================After Training=============================")
         print(f"Values before decay:")
         print(f"Epsilon: {self.epsilon}, Epsilon Decay: {self.epsilon_decay}, Epsilon Min: {self.epsilon_min}")
@@ -184,7 +180,7 @@ def main():
         else:
             print("\u2705 Remaining in the same replica count")
         print('\U0001F504 Stabilizing for 30 secs...')
-        time.sleep(30)
+        time.sleep(120)
         try:
             print("\U0001F504 Fetching Data for the next state...")
             next_state = data.fetchState()
