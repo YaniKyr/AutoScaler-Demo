@@ -47,7 +47,7 @@ class DQNAgent:
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))
 
-    def act(self, state):
+    def act(self, state, step):
         cpu_z = [(state[0] * state[2]) / max(state[2] + i, 1) for i in self.action]
         valid_indices = [idx for idx, cpu in enumerate(cpu_z) if cpu < 40]
         if valid_indices:
@@ -66,9 +66,15 @@ class DQNAgent:
 
         # --- Blended Action Selection ---
         # With probability (cpu_scaler_weight) choose the heuristic; otherwise, the DQN decision.
-        if np.random.rand() < self.cpu_scaler_weight:
+        
+        if np.random.rand() < self.epsilon and step % 5==0:
+            print("🔴Randomness every 5 steps")
+            chosen_action = np.random.choice(self.action)
+        elif np.random.rand() < self.cpu_scaler_weight:
+            print("🟡Cpu Scaler In Action")
             chosen_action = cpu_scaler_action
         else:
+            print("🟢 Prediction")
             chosen_action = dqn_action
 
         # Enforce bounds (e.g., ensure the new replica count stays between 1 and 9)
@@ -133,7 +139,7 @@ def save_rewards_to_file(rewards, filename='rewards.json'):
 
 
 def Post(agent,state,step_count):
-    action = agent.act(state)
+    action = agent.act(state, step_count)
     target_pods = state[2] + action
 
     print(f'\u27A1 Step of Randomnes {step_count}, with Action={action} and State: {state}, Going to scale to: {target_pods}')
