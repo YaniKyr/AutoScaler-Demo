@@ -26,6 +26,9 @@ class DQNAgent:
         self.model = self._build_model()
         self.target_model = self._build_model() 
         self.update_target_model()  
+        self.cpu_scaler_weight = 1.0      # Start fully imitating CPU scaler
+        self.cpu_scaler_decay = 0.95      # Decay factor per training cycle
+        self.cpu_scaler_min = 0.0         # Minimum weight 
 
     def _build_model(self):
         #print(f'At build model State size: {self.state_size}')
@@ -45,23 +48,33 @@ class DQNAgent:
         self.memory.append((state, action, reward, next_state))
 
     def act(self, state):
-        if np.random.rand() <= self.epsilon:
-            cpu_z = [(state[0] * state[2]) / max(state[2] + i, 1) for i in self.action]
-            valid_indices = [idx for idx, cpu in enumerate(cpu_z) if cpu < 40]
-            if valid_indices:
-                action = self.action[max(valid_indices, key=lambda idx: cpu_z[idx])]
-            else:
-                action = 0
-            if action + state[2] > 9 or action + state[2] < 1:
-                return 0
-            return action
+        cpu_z = [(state[0] * state[2]) / max(state[2] + i, 1) for i in self.action]
+        valid_indices = [idx for idx, cpu in enumerate(cpu_z) if cpu < 40]
+        if valid_indices:
+            cpu_scaler_action = self.action[max(valid_indices, key=lambda idx: cpu_z[idx])]
+        else:
+            cpu_scaler_action = 0
+
+        # --- DQN Predicted Action ---
         try:
-            state = np.array([state])  # Add batch dimension
-            q_values = self.model.predict(state, verbose=1)
-            return self.action[np.argmax(q_values[0])]
+            state_input = np.array([state])  # Add batch dimension
+            q_values = self.model.predict(state_input, verbose=0)
+            dqn_action = self.action[np.argmax(q_values[0])]
         except Exception as e:
-            print(f"\u26A0 Error fetching state:{e}")
-            return np.random.choice(self.action,p=[0.35,0.4,0.25])
+            print(f"\u26A0 Error fetching state: {e}")
+            dqn_action = np.random.choice(self.action)
+
+        # --- Blended Action Selection ---
+        # With probability (cpu_scaler_weight) choose the heuristic; otherwise, the DQN decision.
+        if np.random.rand() < self.cpu_scaler_weight:
+            chosen_action = cpu_scaler_action
+        else:
+            chosen_action = dqn_action
+
+        # Enforce bounds (e.g., ensure the new replica count stays between 1 and 9)
+        if chosen_action + state[2] > 9 or chosen_action + state[2] < 1:
+            return 0
+        return chosen_action
 
     def reward(self, data):
         try:
@@ -107,6 +120,7 @@ class DQNAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
+        self.cpu_scaler_weight = max(self.cpu_scaler_min, self.cpu_scaler_weight * self.cpu_scaler_decay)
 
 
 def save_rewards_to_file(rewards, filename='rewards.json'):
@@ -120,7 +134,7 @@ def save_rewards_to_file(rewards, filename='rewards.json'):
 
 def Post(agent,state,step_count):
     action = agent.act(state)
-    target_pods = max(1, min(Prometheufunctions().fetchState()[2] + action, 9))
+    target_pods = state[2] + action
 
     print(f'\u27A1 Step of Randomnes {step_count}, with Action={action} and State: {state}, Going to scale to: {target_pods}')
     file = '/tmp/shared_file.json'
