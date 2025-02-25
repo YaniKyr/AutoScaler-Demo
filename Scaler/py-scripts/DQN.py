@@ -49,7 +49,7 @@ class DQNAgent:
 
     def act(self, state, step):
         cpu_z = [(state[0] * state[2]) / max(state[2] + i, 1) for i in self.action]
-        valid_indices = [idx for idx, cpu in enumerate(cpu_z) if cpu < 40]
+        valid_indices = [idx for idx, cpu in enumerate(cpu_z) if cpu < 35]
         if valid_indices:
             cpu_scaler_action = self.action[max(valid_indices, key=lambda idx: cpu_z[idx])]
         else:
