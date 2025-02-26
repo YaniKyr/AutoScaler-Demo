@@ -1,17 +1,15 @@
 import numpy as np
 import json
 from functions import Prometheufunctions 
-from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.models import Sequential, load_model # type: ignore
 from tensorflow.keras.layers import Dense  #type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.losses import MeanSquaredError  # type: ignore
-from tensorflow.keras.losses import Huber  # type: ignore
 from collections import deque
 import os
 import tensorflow as tf
 import time
-losses = []
-rewards = []
+
 
 class DQNAgent:
     def __init__(self, state_size):
@@ -19,17 +17,18 @@ class DQNAgent:
         self.memory = deque(maxlen=5000)
         self.rewards = []
         self.gamma = 0.9
-        self.epsilon = 1.0
+        self.epsilon = 0.9
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9
+        self.epsilon_decay = 0.75
         self.action = [-2, -1, 0, 1, 2]
-        self.model = self._build_model()
+        self.model = self._read_model_()
         self.target_model = self._build_model() 
         self.update_target_model()  
-        self.cpu_scaler_weight = 1.0      # Start fully imitating CPU scaler
-        self.cpu_scaler_decay = 0.95      # Decay factor per training cycle
-        self.cpu_scaler_min = 0.0         # Minimum weight 
-
+        self.cpu_scaler_weight = 0.9      # Start fully imitating CPU scaler
+        self.cpu_scaler_decay = 0.75      # Decay factor per training cycle
+        self.cpu_scaler_min = 0.01         # Minimum weight 
+        self.losses = []
+        self.rewards = []
     def _build_model(self):
         #print(f'At build model State size: {self.state_size}')
         model = Sequential()
@@ -37,8 +36,17 @@ class DQNAgent:
         model.add(Dense(32, activation='relu'))
         model.add(Dense(16, activation='relu'))
         model.add(Dense(len(self.action), activation='linear'))
-        model.compile(optimizer=Adam(learning_rate=0.001), loss=Huber())
+        model.compile(optimizer=Adam(learning_rate=0.001), loss=MeanSquaredError())
         return model
+    
+    def _read_model_(self):
+        try:
+            model = load_model('scaler.model.h5')
+            print("\u2705 Model successfully loaded")
+            return model
+        except Exception as e:
+            print(f"\u26A0 Error loading model: {e}")
+            return self._build_model()
 
     def update_target_model(self):        
         self.target_model.set_weights(self.model.get_weights())
@@ -112,10 +120,10 @@ class DQNAgent:
         # Train the model
         history = self.model.fit(states, q_values, epochs=10,verbose = 0)
         loss = history.history['loss'][-1]
-        losses.append(loss)
+        self.losses.append(loss)
         batch_rewards = [self.memory[i][2] for i in minibatch]
         avg_reward = np.mean(batch_rewards)
-        rewards.append(avg_reward)
+        self.rewards.append(avg_reward)
         
         print(f"Replay - Avg Loss: {loss:.4f}, Avg Reward: {avg_reward:.4f}")
         print(f"========================After Training=============================")
@@ -186,9 +194,9 @@ def main():
     state_size = 3
     agent = DQNAgent(state_size)
 
-    batch_size = 160
-    replay_frequency = 160
-    target_update_frequency = 100
+    batch_size = 80
+    replay_frequency = 80
+    target_update_frequency = 50
     step_count = 0
 
 
