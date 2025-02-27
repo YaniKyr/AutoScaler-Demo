@@ -93,7 +93,7 @@ class DQNAgent:
     def reward(self, data):
         try:
             RTT = int(round(float(data.getRTT())))
-            return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -200)
+            return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -20)
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
             return 0
@@ -115,7 +115,11 @@ class DQNAgent:
         for idx, i in enumerate(minibatch):
             _,action, reward, _ = self.memory[i]
             target_q = reward + self.gamma * np.amax(q_values_next[idx])
-            q_values[idx][action] = target_q
+            q_values[idx][action] = (target_q - q_values[idx][action])**2
+            norm = np.linalg.norm(q_values[idx])
+            if norm == 0:
+                norm = 1.0  # Avoid division by zero
+            q_values[idx] = q_values[idx] / norm 
         
         # Train the model
         history = self.model.fit(states, q_values, epochs=10,verbose = 0)
