@@ -19,13 +19,13 @@ class DQNAgent:
         self.gamma = 0.9
         self.epsilon = 0.9
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.75
+        self.epsilon_decay = 0.9
         self.action = [-2, -1, 0, 1, 2]
         self.model = self._read_model_()
         self.target_model = self._build_model() 
         self.update_target_model()  
         self.cpu_scaler_weight = 0.9      # Start fully imitating CPU scaler
-        self.cpu_scaler_decay = 0.75      # Decay factor per training cycle
+        self.cpu_scaler_decay = 0.9      # Decay factor per training cycle
         self.cpu_scaler_min = 0.01         # Minimum weight 
         self.losses = []
         self.rewards = []
@@ -78,10 +78,10 @@ class DQNAgent:
         # --- Blended Action Selection ---
         # With probability (cpu_scaler_weight) choose the heuristic; otherwise, the DQN decision.
         prob = np.random.rand()
-        if  prob< self.epsilon and step % 2==0:
+        if  prob< self.epsilon :
             print("🔴Randomness every 2 steps")
             chosen_action = np.random.choice(self.action)
-        elif prob < self.cpu_scaler_weight:
+        elif prob < self.cpu_scaler_weight and step % 5==0:
             print("🟡Cpu Scaler In Action")
             chosen_action = cpu_scaler_action
         else:
