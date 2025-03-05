@@ -98,7 +98,7 @@ class DQNAgent:
 
     def reward(self, data):
         try:
-            RTT = int(round(float(data.getRTT())))
+            RTT = int(round(float(data[2])))
             return data[0] + (1 / (1 + RTT / 250) if RTT < 250 else -50)
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
