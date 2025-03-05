@@ -192,7 +192,7 @@ def Post(agent,state,step_count):
         
         time.sleep(5)
 
-def next_state(): 
+def futureCheck(): 
     #Counter for the number of maximum pods --Done
     #System Stability -- Can't define
     #Maybe an SLA higher than 2000 or persisting in high levels  --Done
@@ -241,7 +241,7 @@ def main():
             time.sleep(60)
             try:
                 print("\U0001F504 Fetching Data for the next state...")
-                next_state, done = next_state()
+                next_state, done = futureCheck()
             except Exception as e:
                 print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
                 next_state=[0,0,0]
