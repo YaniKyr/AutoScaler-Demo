@@ -17,15 +17,15 @@ class DQNAgent:
         self.memory = deque(maxlen=5000)
         self.rewards = []
         self.gamma = 0.9
-        self.epsilon = 0.9
+        self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9
+        self.epsilon_decay = 0.95
         self.action = [-2, -1, 0, 1, 2]
         self.model = self._read_model_()
         self.target_model = self._build_model() 
         self.update_target_model()  
-        self.cpu_scaler_weight = 0.9      # Start fully imitating CPU scaler
-        self.cpu_scaler_decay = 0.9      # Decay factor per training cycle
+        self.cpu_scaler_weight = 1.0      # Start fully imitating CPU scaler
+        self.cpu_scaler_decay = 0.95      # Decay factor per training cycle
         self.cpu_scaler_min = 0.01         # Minimum weight 
         self.losses = []
         self.rewards = []
@@ -79,10 +79,10 @@ class DQNAgent:
         # With probability (cpu_scaler_weight) choose the heuristic; otherwise, the DQN decision.
         prob = np.random.rand()
         if  prob< self.epsilon :
-            print("🔴Randomness every 2 steps")
+            print("🔴Randomness In Action")
             chosen_action = np.random.choice(self.action)
         elif prob < self.cpu_scaler_weight and step % 5==0:
-            print("🟡Cpu Scaler In Action")
+            print("🟡Cpu Scaler In Action every 5 Steps")
             chosen_action = cpu_scaler_action
         else:
             print("🟢 Prediction")
@@ -96,7 +96,7 @@ class DQNAgent:
     def reward(self, data):
         try:
             RTT = int(round(float(data.getRTT())))
-            return data.fetchState()[0] + (1 / (1 + RTT / 250) if RTT < 250 else -50)
+            return data[0] + (1 / (1 + RTT / 250) if RTT < 250 else -50)
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
             return 0
@@ -189,6 +189,18 @@ def Post(agent,state,step_count):
         
         time.sleep(5)
 
+def next_state(): 
+    #Counter for the number of maximum pods --Done
+    #System Stability -- Can't define
+    #Maybe an SLA higher than 2000 or persisting in high levels  --Done
+    #set a time threshold per episode -- Done
+    if Prometheufunctions().getSlaVioRange():
+        return Prometheufunctions().fetchState(), True
+    elif Prometheufunctions().getMaxPodsRange():
+        return Prometheufunctions().fetchState(), True
+    return Prometheufunctions().fetchState(), False
+    
+
 def main():
     data = Prometheufunctions()
     
@@ -200,51 +212,52 @@ def main():
 
     state_size = 3
     agent = DQNAgent(state_size)
-
-    batch_size = 80
-    replay_frequency = 80
-    target_update_frequency = 50
+    episodes = 1000
+    batch_size = 160
+    replay_frequency = 160
+    target_update_frequency = 100
     step_count = 0
-
-
-    while 1:
-        step_count += 1
-        #if step_count==1 and os.path.exists('Scaler.weights.h5'):
-        #    agent.model.load_weights('Scaler.weights.h5')
-        # Perform the action
-        action = 0
-        flag =False
-        while not flag:
-            action,flag = Post(agent, state, step_count)
-        if action < 0:
-            print("\u2705 Scaled down Saccessfuly")
-        elif action > 0: 
-            print("\u2705 Scaled up Saccessfuly")
-        else:
-            print("\u2705 Remaining in the same replica count")
-        print('\U0001F504 Stabilizing for 60 secs...')
-        time.sleep(60)
-        try:
-            print("\U0001F504 Fetching Data for the next state...")
-            next_state = data.fetchState()
-        except Exception as e:
-            print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
-            next_state=[0,0,0]
-        reward = agent.reward(data)
-        print(f'\u2705 Calculated the Reward: {reward}')
-        # Remember the experience
-        agent.remember(state, int(action), reward, next_state)
-        state = next_state
-        
-        # Train the agent (experience replay) 
-        if len(agent.memory) >= batch_size and step_count % replay_frequency == 0:
-            print("\U0001F504 Training...")
-            agent.replay(batch_size)
-
-        if step_count % target_update_frequency == 0:
+    done = False
+    for _ in range(episodes):
+        while not done:
+            step_count += 1
+            #if step_count==1 and os.path.exists('Scaler.weights.h5'):
+            #    agent.model.load_weights('Scaler.weights.h5')
+            # Perform the action
+            action = 0
+            flag =False
+            while not flag:
+                action,flag = Post(agent, state, step_count)
+            if action < 0:
+                print("\u2705 Scaled down Saccessfuly")
+            elif action > 0: 
+                print("\u2705 Scaled up Saccessfuly")
+            else:
+                print("\u2705 Remaining in the same replica count")
+            print('\U0001F504 Stabilizing for 60 secs...')
+            time.sleep(60)
+            try:
+                print("\U0001F504 Fetching Data for the next state...")
+                next_state, done = next_state()
+            except Exception as e:
+                print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
+                next_state=[0,0,0]
+            reward = agent.reward(next_state)
+            print(f'\u2705 Calculated the Reward: {reward}')
+            # Remember the experience
+            agent.remember(state, int(action), reward, next_state)
+            state = next_state
             
-            print("\U0001F504 Updating Values of Target...")
-            agent.update_target_model()
+            # Train the agent (experience replay) 
+            if len(agent.memory) >= batch_size and step_count % replay_frequency == 0:
+                print("\U0001F504 Training...")
+                agent.replay(batch_size)
+                done = True
+
+            if step_count % target_update_frequency == 0:
+                
+                print("\U0001F504 Updating Values of Target...")
+                agent.update_target_model()
             
 
 if __name__ == '__main__':
