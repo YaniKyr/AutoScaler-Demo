@@ -46,7 +46,7 @@ class Prometheufunctions:
             start_time=start_time,
             end_time=end_time,
             step='1m')
-        sla_violations = [float(point['value'][1]) for point in sla_violation_data[0]['values']]
+        sla_violations = [float(point[1]) for point in sla_violation_data[0]['values']]
         if all(value > 1000 for value in sla_violations):
             return True
         
