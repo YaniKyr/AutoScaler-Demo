@@ -221,7 +221,10 @@ def main():
     target_update_frequency = 100
     step_count = 0
     done = False
-    for _ in range(episodes):
+    for i in range(episodes):
+        print('\n\n')
+        print(f'\u27A1 Episode {i+1}/{episodes}')
+        
         while not done:
             step_count += 1
             #if step_count==1 and os.path.exists('Scaler.weights.h5'):
