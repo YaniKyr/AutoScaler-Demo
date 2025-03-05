@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 class Prometheufunctions:
     def __init__(self):
-        self.prom = PrometheusConnect(url="http://prometheus.istio-system:9090", zdisable_ssl=True)
+        self.prom = PrometheusConnect(url="http://prometheus.istio-system:9090", disable_ssl=True)
         self.queries={
             "numpods": "count(up{pod=~'product.*'})",
             "userRequests": "sum(rate(istio_requests_total{pod=~'product.*'}[1m]))",
