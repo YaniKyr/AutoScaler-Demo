@@ -73,5 +73,3 @@ class Prometheufunctions:
             return 0
         return data[0]['value'][1]
 
-print("Get if persisting Sla Vio",Prometheufunctions().getSlaVioRange())
-print("Get if persisting Max Pods",Prometheufunctions().getMaxPodsRange())
