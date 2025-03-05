@@ -81,12 +81,14 @@ class DQNAgent:
         # --- Blended Action Selection ---
         # With probability (cpu_scaler_weight) choose the heuristic; otherwise, the DQN decision.
         prob = np.random.rand()
-        if  prob< self.epsilon :
-            print("🔴Randomness In Action")
-            chosen_action = np.random.choice(self.action)
-        elif prob < self.cpu_scaler_weight and step % 5==0:
+        
+        if prob < self.cpu_scaler_weight and step % 5==0:
             print("🟡Cpu Scaler In Action every 5 Steps")
             chosen_action = cpu_scaler_action
+
+        elif  prob< self.epsilon :
+            print("🔴Randomness In Action")
+            chosen_action = np.random.choice(self.action)
         else:
             print("🟢 Prediction")
             chosen_action = dqn_action
