@@ -46,7 +46,7 @@ class Prometheufunctions:
             start_time=start_time,
             end_time=end_time,
             step='1m')
-        sla_violations = [float(point['value'][1]) for point in sla_violation_data]
+        sla_violations = [float(point['value'][1]) for point in sla_violation_data[0]['values']]
         if all(value > 1000 for value in sla_violations):
             return True
         
@@ -73,5 +73,5 @@ class Prometheufunctions:
             return 0
         return data[0]['value'][1]
 
-#print("Get if persisting Sla Vio",Prometheufunctions().getSlaVioRange())
+print("Get if persisting Sla Vio",Prometheufunctions().getSlaVioRange())
 print("Get if persisting Max Pods",Prometheufunctions().getMaxPodsRange())
