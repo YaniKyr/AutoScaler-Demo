@@ -96,7 +96,7 @@ class DQNAgent:
             return 0
         return chosen_action
 
-    def reward(self):
+    def reward(self,data):
         try:
             RTT = int(round(float(Prometheufunctions().getRTT())))
             return data[0] + (1 / (1 + RTT / 250) if RTT < 250 else -50)
