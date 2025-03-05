@@ -41,8 +41,11 @@ class Prometheufunctions:
     def getSlaVioRange(self):
         end_time = datetime.now()
         start_time = end_time - timedelta(minutes=10)
-        sla_violation_query = self.queries['RT_obs'] + f'[{(end_time - start_time).seconds}s]'
-        sla_violation_data = self.prom.custom_query(query=sla_violation_query)
+        sla_violation_data = self.prom.custom_query_range(
+            query=self.queries['RT_obs'],
+            start_time=start_time,
+            end_time=end_time,
+            step='1m')
         sla_violations = [float(point['value'][1]) for point in sla_violation_data]
         if all(value > 1000 for value in sla_violations):
             return True
@@ -52,10 +55,13 @@ class Prometheufunctions:
     def getMaxPodsRange(self):
         end_time = datetime.now()
         start_time = end_time - timedelta(minutes=10)
-        max_pods_query = self.queries['numpods'] + f'[{(end_time - start_time).seconds}s]'
-        max_pods_data = self.prom.custom_query(query=max_pods_query)
+        max_pods_data = self.prom.custom_query_range(
+            query=self.queries['numpods'],
+            start_time=start_time,
+            end_time=end_time,
+            step='1m')
         max_pods = [int(point['value'][1]) for point in max_pods_data]
-        if all(value >=9  for value in max_pods):
+        if all(value >= 9 for value in max_pods):
             return True
         return False
     
@@ -66,5 +72,5 @@ class Prometheufunctions:
             return 0
         return data[0]['value'][1]
 
-print("Get if persisting Sla Vio",Prometheufunctions().getSlaVioRange())
+#print("Get if persisting Sla Vio",Prometheufunctions().getSlaVioRange())
 print("Get if persisting Max Pods",Prometheufunctions().getMaxPodsRange())
