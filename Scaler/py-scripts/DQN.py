@@ -222,8 +222,9 @@ def main():
     replay_frequency = 160
     target_update_frequency = 100
     step_count = 0
-    done = False
+    
     for i in range(episodes):
+        done = False
         print('\n\n')
         print(f'\u27A1 Episode {i+1}/{episodes}')
         
