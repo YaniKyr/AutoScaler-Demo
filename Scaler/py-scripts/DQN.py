@@ -2,7 +2,7 @@ import numpy as np
 import json
 from functions import Prometheufunctions 
 from tensorflow.keras.models import Sequential, load_model # type: ignore
-from tensorflow.keras.layers import Dense  #type: ignore
+from tensorflow.keras.layers import Dense, Dropout  #type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.losses import MeanSquaredError  # type: ignore
 from collections import deque
@@ -33,10 +33,13 @@ class DQNAgent:
         #print(f'At build model State size: {self.state_size}')
         model = Sequential()
         model.add(Dense(16, input_dim=self.state_size, activation='relu'))
+        model.add(Dropout(0.2))
         model.add(Dense(32, activation='relu'))
+        model.add(Dropout(0.25))
         model.add(Dense(16, activation='relu'))
+        model.add(Dropout(0.1))
         model.add(Dense(len(self.action), activation='linear'))
-        model.compile(optimizer=Adam(learning_rate=0.001), loss=MeanSquaredError())
+        model.compile(optimizer=Adam(learning_rate=0.01), loss=MeanSquaredError())
         return model
     
     def _read_model_(self):
