@@ -60,6 +60,7 @@ class Prometheufunctions:
             start_time=start_time,
             end_time=end_time,
             step='1m')
+        print(max_pods_data)
         max_pods = [int(point['value'][1]) for point in max_pods_data]
         if all(value >= 9 for value in max_pods):
             return True
