@@ -247,7 +247,7 @@ def main():
             time.sleep(60)
             try:
                 print("\U0001F504 Fetching Data for the next state...")
-                next_state, done = futureCheck()
+                next_state, _ = futureCheck()
             except Exception as e:
                 print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
                 next_state=[0,0,0]
