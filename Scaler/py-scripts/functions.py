@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 
 class Prometheufunctions:
     def __init__(self):
-        self.prom = PrometheusConnect(url="http://10.152.183.30:9090", disable_ssl=True)
+        self.prom = PrometheusConnect(url="http://prometheus.istio-system:9090", disable_ssl=True)
         self.queries={
             "numpods": "count(up{pod=~'product.*'})",
             "userRequests": "sum(rate(istio_requests_total{pod=~'product.*'}[1m]))",
-            "cpuUtil": "avg(rate(container_cpu_usage_seconds_total{container='productpage'}[1m]) * 100)",
+            "cpuUtil": "avg(rate(container_cpu_usage_seconds_total{container='productpage'}[1m])*100)",
             "RT_obs": "histogram_quantile(0.95, sum by(le) (rate(istio_request_duration_milliseconds_bucket{destination_app='productpage'}[1m])))"
         }
         
@@ -24,9 +24,6 @@ class Prometheufunctions:
         cpu = self.query(self.queries['cpuUtil'])
         reqs = self.query(self.queries['userRequests'])
         pods = self.query(self.queries['numpods'])
-        
-        
-        
         return [cpu,reqs,pods]
         
 
@@ -40,8 +37,34 @@ class Prometheufunctions:
         
             print(e, "Prometheus is not live")
             return  False
-        
 
+    def getSlaVioRange(self):
+        end_time = datetime.now()
+        start_time = end_time - timedelta(minutes=8)
+        sla_violation_data = self.prom.custom_query_range(
+            query=self.queries['RT_obs'],
+            start_time=start_time,
+            end_time=end_time,
+            step='1m')
+        sla_violations = [float(point[1]) for point in sla_violation_data[0]['values']]
+        if all(value > 500 for value in sla_violations):
+            return True
+        
+        return False
+        
+    def getMaxPodsRange(self):
+        end_time = datetime.now()
+        start_time = end_time - timedelta(minutes=8)
+        max_pods_data = self.prom.custom_query_range(
+            query=self.queries['numpods'],
+            start_time=start_time,
+            end_time=end_time,
+            step='1m')
+        max_pods = [int(point[1]) for point in max_pods_data[0]['values']]
+        if all(value >= 8 for value in max_pods):
+            return True
+        return False
+    
     def getRTT(self):
         data = self.prom.custom_query(query=self.queries['RT_obs'])
 

@@ -1,0 +1,14 @@
+Replay - Avg Loss: 1633.5823, Avg Reward: 20.2893
+Replay - Avg Loss: 189.3811, Avg Reward: 13.3685
+Replay - Avg Loss: 31.8339, Avg Reward: 13.7538
+Replay - Avg Loss: 4.7707, Avg Reward: 14.8560
+Replay - Avg Loss: 1.0716, Avg Reward: 16.9208
+Replay - Avg Loss: 0.2594, Avg Reward: 13.2180
+Replay - Avg Loss: 0.1490, Avg Reward: 12.4330
+Replay - Avg Loss: 0.1582, Avg Reward: 12.1134
+Replay - Avg Loss: 0.1531, Avg Reward: 10.4614
+Replay - Avg Loss: 0.1431, Avg Reward: 11.2271
+Replay - Avg Loss: 0.1400, Avg Reward: 11.8233
+Replay - Avg Loss: 0.1311, Avg Reward: 9.0411
+Replay - Avg Loss: 0.1240, Avg Reward: 9.3322
+Replay - Avg Loss: 0.1063, Avg Reward: 9.9383

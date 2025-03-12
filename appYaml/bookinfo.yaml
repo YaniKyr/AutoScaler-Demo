@@ -76,6 +76,13 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
+        resources:
+          requests:
+            cpu: "500m"
+          limits:
+            cpu: "1000m"
+            memory: "500Mi"
+
 ---
 ##################################################################################################
 # Ratings service
@@ -127,6 +134,12 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
+        resources:
+          requests:
+            cpu: "500m"
+          limits:
+            cpu: "1000m"
+            memory: "500Mi"
 ---
 ##################################################################################################
 # Reviews service
@@ -186,6 +199,12 @@ spec:
           mountPath: /tmp
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
+        resources:
+          requests:
+            cpu: "500m"
+          limits:
+            cpu: "1000m"
+            memory: "500Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
@@ -226,6 +245,12 @@ spec:
           mountPath: /tmp
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
+        resources:
+          requests:
+            cpu: "500m"
+          limits:
+            cpu: "1000m"
+            memory: "500Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
@@ -266,6 +291,12 @@ spec:
           mountPath: /tmp
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
+        resources:
+          requests:
+            cpu: "500m"
+          limits:
+            cpu: "1000m"
+            memory: "500Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}

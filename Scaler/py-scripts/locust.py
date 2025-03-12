@@ -6,12 +6,12 @@ from locust import HttpUser, task, between, events
 import gevent
 
 # Parameters
-n_users = 100  # Max users
-n_timesteps = 1500 # Number of time steps in the dataset
+n_users = 150  # Max users
+n_timesteps = 1000 # Number of time steps in the dataset
 timestep_min = 1  # Minimum timestep in seconds
 timestep_max = 10  # Maximum timestep in seconds
-start_end_period_seconds = 10 * 60  # 10 minutes in seconds
-start_end_user_range = (1, 5)  # User count during start/end period
+start_end_period_seconds = 15 * 60  # 20 minutes in seconds
+start_end_user_range = (20,25)  # User count during start/end period
 
 # Generate time series data with a dome-shaped pattern and bursts
 timesteps = [random.randint(timestep_min, timestep_max) for _ in range(n_timesteps)]
@@ -20,7 +20,7 @@ timestamps = np.cumsum(timesteps)
 # Dome-shaped activity
 activity = np.sin(np.linspace(-np.pi / 2, 3 * np.pi / 2, n_timesteps))
 activity = (activity - activity.min()) / (activity.max() - activity.min())
-activity = (activity * (n_users - 1)) + 1
+activity = (activity * (n_users - 1)) + 5
 noise = np.random.normal(0, 0.5, n_timesteps)
 activity = activity + noise
 activity = np.clip(activity, 1, n_users).round().astype(int)
