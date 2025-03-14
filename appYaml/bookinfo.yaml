@@ -78,9 +78,9 @@ spec:
         - containerPort: 9080
         resources:
           requests:
-            cpu: "500m"
+            cpu: "300m"
           limits:
-            cpu: "1000m"
+            cpu: "500m"
             memory: "500Mi"
 
 ---
@@ -136,9 +136,9 @@ spec:
         - containerPort: 9080
         resources:
           requests:
-            cpu: "500m"
+            cpu: "300m"
           limits:
-            cpu: "1000m"
+            cpu: "500m"
             memory: "500Mi"
 ---
 ##################################################################################################
@@ -201,9 +201,9 @@ spec:
           mountPath: /opt/ibm/wlp/output
         resources:
           requests:
-            cpu: "500m"
+            cpu: "300m"
           limits:
-            cpu: "1000m"
+            cpu: "500m"
             memory: "500Mi"
       volumes:
       - name: wlp-output
@@ -247,9 +247,9 @@ spec:
           mountPath: /opt/ibm/wlp/output
         resources:
           requests:
-            cpu: "500m"
+            cpu: "300m"
           limits:
-            cpu: "1000m"
+            cpu: "500m"
             memory: "500Mi"
       volumes:
       - name: wlp-output
@@ -293,9 +293,9 @@ spec:
           mountPath: /opt/ibm/wlp/output
         resources:
           requests:
-            cpu: "500m"
+            cpu: "300m"
           limits:
-            cpu: "1000m"
+            cpu: "500m"
             memory: "500Mi"
       volumes:
       - name: wlp-output
@@ -364,9 +364,10 @@ spec:
           mountPath: /tmp
         resources:
           requests:
-            cpu: "500m"
+            cpu: "300m"
           limits:
             cpu: "500m"
+            memory: "500Mi"
       volumes:
       - name: tmp
         emptyDir: {}
