@@ -112,8 +112,17 @@ class DQNAgent:
             return
 
         minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
-        states = np.array([self.memory[i][0] for i in minibatch])
-        next_states = np.array([self.memory[i][3] for i in minibatch])
+        
+        sdata = np.array([self.memory[i][0] for i in minibatch])
+        min_vals = np.min(sdata, axis=0)
+        max_vals = np.max(sdata, axis=0)
+        states = (sdata - min_vals) / (max_vals - min_vals)
+        
+        nst = np.array([self.memory[i][3] for i in minibatch])
+        min_vals = np.min(nst, axis=0)
+        max_vals = np.max(nst, axis=0)
+        next_states = (nst - min_vals) / (max_vals - min_vals)
+        
         try:        
             q_values = self.model.predict(states, verbose=0)
             q_values_next = self.target_model.predict(next_states, verbose=0)
