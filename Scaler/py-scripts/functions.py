@@ -9,7 +9,7 @@ class Prometheufunctions:
         self.queries={
             "numpods": "count(up{pod=~'product.*'})",
             "userRequests": "sum(rate(istio_requests_total{pod=~'product.*'}[1m]))",
-            "cpuUtil": "avg(rate(container_cpu_usage_seconds_total{container='productpage'}[1m])*100)",
+            "cpuUtil": "avg(rate(container_cpu_usage_seconds_total{container='productpage'}[1m]))",
             "RT_obs": "histogram_quantile(0.95, sum by(le) (rate(istio_request_duration_milliseconds_bucket{destination_app='productpage'}[1m])))"
         }
         
@@ -17,13 +17,13 @@ class Prometheufunctions:
     def query(self,query):
         #import ipdb; ipdb.set_trace()
         data = self.prom.custom_query(query=query)
-        metric = int(float(data[0]['value'][1]))
+        metric = float(data[0]['value'][1])
         return metric
     def fetchState(self):
         
         cpu = self.query(self.queries['cpuUtil'])
-        reqs = self.query(self.queries['userRequests'])
-        pods = self.query(self.queries['numpods'])
+        reqs = int(self.query(self.queries['userRequests']))
+        pods = int(self.query(self.queries['numpods']))
         return [cpu,reqs,pods]
         
 
