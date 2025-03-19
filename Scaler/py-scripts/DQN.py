@@ -122,15 +122,12 @@ class DQNAgent:
 
         for idx, i in enumerate(minibatch):
             _,action, reward, _ = self.memory[i]
-            target_q = reward + self.gamma * np.amax(q_values_next[idx])
-            q_values[idx][action] = (target_q - q_values[idx][action])**2
-            norm = np.linalg.norm(q_values[idx])
-            if norm == 0:
-                norm = 1.0  # Avoid division by zero
-            q_values[idx] = q_values[idx] / norm 
+            q_values[idx][action] = reward + self.gamma * np.amax(q_values_next[idx])
+            
+
         
         # Train the model
-        history = self.model.fit(states, q_values, epochs=10,verbose = 0)
+        history = self.model.fit(states, q_values, epochs=1,verbose = 0)
         loss = history.history['loss'][-1]
         self.losses.append(loss)
         batch_rewards = [self.memory[i][2] for i in minibatch]
@@ -218,9 +215,9 @@ def main():
     state_size = 3
     agent = DQNAgent(state_size)
     episodes = 1000
-    batch_size = 160
-    replay_frequency = 160
-    target_update_frequency = 100
+    batch_size = 64
+    replay_frequency = 64
+    target_update_frequency = 50
     step_count = 0
     
     for i in range(episodes):
