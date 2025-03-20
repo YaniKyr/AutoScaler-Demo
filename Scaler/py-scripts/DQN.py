@@ -62,12 +62,6 @@ class DQNAgent:
         self.memory.append((state, action, reward, next_state))
 
     def act(self, state, step):
-        cpu_z = [(state[0] * state[2]) / max(state[2] + i, 1) for i in self.action]
-        valid_indices = [idx for idx, cpu in enumerate(cpu_z) if cpu < 35]
-        if valid_indices:
-            cpu_scaler_action = self.action[max(valid_indices, key=lambda idx: cpu_z[idx])]
-        else:
-            cpu_scaler_action = 0
 
         # --- DQN Predicted Action ---
         try:
@@ -82,11 +76,7 @@ class DQNAgent:
         # With probability (cpu_scaler_weight) choose the heuristic; otherwise, the DQN decision.
         prob = np.random.rand()
         
-        if prob < self.cpu_scaler_weight and step % 5==0:
-            print("🟡Cpu Scaler In Action every 5 Steps")
-            chosen_action = cpu_scaler_action
-
-        elif  prob< self.epsilon :
+        if  prob< self.epsilon :
             print("🔴Randomness In Action")
             chosen_action = np.random.choice(self.action)
         else:
@@ -152,7 +142,6 @@ class DQNAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-        self.cpu_scaler_weight = max(self.cpu_scaler_min, self.cpu_scaler_weight * self.cpu_scaler_decay)
 
 
 def save_rewards_to_file(rewards, filename='rewards.json'):
