@@ -19,14 +19,11 @@ class DQNAgent:
         self.gamma = 0.9
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.95
+        self.epsilon_decay = 0.9
         self.action = [-2, -1, 0, 1, 2]
         self.model = self._read_model_()
         self.target_model = self._build_model() 
         self.update_target_model()  
-        self.cpu_scaler_weight = 1.0      # Start fully imitating CPU scaler
-        self.cpu_scaler_decay = 0.95      # Decay factor per training cycle
-        self.cpu_scaler_min = 0.01         # Minimum weight 
         self.losses = []
         self.rewards = []
     def _build_model(self):
@@ -39,7 +36,7 @@ class DQNAgent:
         model.add(Dense(16, activation='relu'))
         model.add(Dropout(0.1))
         model.add(Dense(len(self.action), activation='linear'))
-        model.compile(optimizer=Adam(learning_rate=0.01), loss=MeanSquaredError())
+        model.compile(optimizer=Adam(learning_rate=0.001), loss=MeanSquaredError())
         return model
     
     def _read_model_(self):
@@ -213,9 +210,9 @@ def main():
     state_size = 3
     agent = DQNAgent(state_size)
     episodes = 1000
-    batch_size = 64
-    replay_frequency = 64
-    target_update_frequency = 50
+    batch_size = 32
+    replay_frequency = 16
+    target_update_frequency = 100
     step_count = 0
     
     for i in range(episodes):
