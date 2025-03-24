@@ -1,93 +1,31 @@
 import numpy as np
 import json
 from functions import Prometheufunctions 
-from tensorflow.keras.models import Sequential, load_model # type: ignore
-from tensorflow.keras.layers import Dense, Dropout  #type: ignore
-from tensorflow.keras.optimizers import Adam # type: ignore
-from tensorflow.keras.losses import MeanSquaredError  # type: ignore
-from collections import deque
 import os
 import tensorflow as tf
 import time
 
 
-class DQNAgent:
+class A2CAgent:
     def __init__(self, state_size):
         self.state_size = state_size
-        self.memory = deque(maxlen=5000)
+        
         self.rewards = []
         self.gamma = 0.9
-        self.epsilon = 1.0
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.95
         self.action = [-2, -1, 0, 1, 2]
-        self.model = self._read_model_()
-        self.target_model = self._build_model() 
-        self.update_target_model()  
-        self.cpu_scaler_weight = 1.0      # Start fully imitating CPU scaler
-        self.cpu_scaler_decay = 0.95      # Decay factor per training cycle
-        self.cpu_scaler_min = 0.01         # Minimum weight 
         self.losses = []
         self.rewards = []
-    def _build_model(self):
-        #print(f'At build model State size: {self.state_size}')
-        model = Sequential()
-        model.add(Dense(16, input_dim=self.state_size, activation='relu'))
-        model.add(Dropout(0.2))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dropout(0.25))
-        model.add(Dense(16, activation='relu'))
-        model.add(Dropout(0.1))
-        model.add(Dense(len(self.action), activation='linear'))
-        model.compile(optimizer=Adam(learning_rate=0.01), loss=MeanSquaredError())
-        return model
-    
-    def _read_model_(self):
-        #try:
-            #model = load_model('scaler.model.h5')
-            #model.compile(optimizer=Adam(learning_rate=0.001), loss=MeanSquaredError())
-            #model.build()
-            #model.summary()
-            #print("\u2705 Model successfully loaded")
-            #return model
-        #except Exception as e:
-        #print(f"\u26A0 Error loading model: {e}")
-        return self._build_model()
+        self.actor = tf.keras.Sequential([
+            tf.keras.layers.Dense(32, activation='relu'),
+            tf.keras.layers.Dense(len(self.action), activation='softmax')])
 
-    def update_target_model(self):        
-        self.target_model.set_weights(self.model.get_weights())
-        self.model.save_weights('scaler.weights.h5')
-
-    def remember(self, state, action, reward, next_state):
-        self.memory.append((state, action, reward, next_state))
-
-    def act(self, state, step):
-
-        # --- DQN Predicted Action ---
-        try:
-            state_input = np.array([state])  # Add batch dimension
-            q_values = self.model.predict(state_input, verbose=0)
-            dqn_action = self.action[np.argmax(q_values[0])]
-        except Exception as e:
-            print(f"\u26A0 Error fetching state: {e}")
-            dqn_action = np.random.choice(self.action)
-
-        # --- Blended Action Selection ---
-        # With probability (cpu_scaler_weight) choose the heuristic; otherwise, the DQN decision.
-        prob = np.random.rand()
+        self.critic = tf.keras.Sequential([
+            tf.keras.layers.Dense(32, activation='relu'),
+            tf.keras.layers.Dense(1)])
         
-        if  prob< self.epsilon :
-            print("🔴Randomness In Action")
-            chosen_action = np.random.choice(self.action)
-        else:
-            print("🟢 Prediction")
-            chosen_action = dqn_action
-
-        # Enforce bounds (e.g., ensure the new replica count stays between 1 and 9)
-        if chosen_action + state[2] > 9 or chosen_action + state[2] < 1:
-            return 0
-        return chosen_action
-
+        self.actor_optimizer =tf.keras.optimizers.Adam(learning_rate=0.001)
+        self.critic_optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+    
     def reward(self,data):
         try:
             RTT = int(round(float(Prometheufunctions().getRTT())))
@@ -95,53 +33,6 @@ class DQNAgent:
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
             return 0
-
-    def replay(self, batch_size):
-
-        if len(self.memory) < batch_size:
-            return
-
-        minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
-        
-        sdata = np.array([self.memory[i][0] for i in minibatch])
-        min_vals = np.min(sdata, axis=0)
-        max_vals = np.max(sdata, axis=0)
-        states = (sdata - min_vals) / (max_vals - min_vals)
-        
-        nst = np.array([self.memory[i][3] for i in minibatch])
-        min_vals = np.min(nst, axis=0)
-        max_vals = np.max(nst, axis=0)
-        next_states = (nst - min_vals) / (max_vals - min_vals)
-        
-        try:        
-            q_values = self.model.predict(states, verbose=0)
-            q_values_next = self.target_model.predict(next_states, verbose=0)
-        except Exception as e:
-            print(f'\u26A0 Exception {e}, error during the target model prediction')
-
-        for idx, i in enumerate(minibatch):
-            _,action, reward, _ = self.memory[i]
-            q_values[idx][action] = reward + self.gamma * np.amax(q_values_next[idx])
-            
-
-        
-        # Train the model
-        history = self.model.fit(states, q_values, epochs=1,verbose = 0)
-        loss = history.history['loss'][-1]
-        self.losses.append(loss)
-        batch_rewards = [self.memory[i][2] for i in minibatch]
-        avg_reward = np.mean(batch_rewards)
-        self.rewards.append(avg_reward)
-        
-        print(f"Replay - Avg Loss: {loss:.4f}, Avg Reward: {avg_reward:.4f}")
-        print(f"========================After Training=============================")
-        print(f"Values before decay:")
-        print(f"Epsilon: {self.epsilon}, Epsilon Decay: {self.epsilon_decay}, Epsilon Min: {self.epsilon_min}")
-        print(f"===================================================================")
-        save_rewards_to_file(self.rewards)
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
-
 
 
 def save_rewards_to_file(rewards, filename='rewards.json'):
@@ -152,11 +43,26 @@ def save_rewards_to_file(rewards, filename='rewards.json'):
     except Exception as e:
         print(f"\u26A0 Error saving rewards: {e}")
 
+def save_losses_to_file(losses, filename='losses.json'):
+    try:
+        with open(filename, 'w') as f:
+            json.dump(losses, f)
+        print(f"\u2705 Losses successfully saved to {filename}")
+    except Exception as e:
+        print(f"\u26A0 Error saving losses: {e}")
+
 
 def Post(agent,state,step_count):
-    action = agent.act(state, step_count)
-    target_pods = state[2] + action
+    #keda might have a bug. When reaching max Replicas e.g. 10 and trying to scale down to 9, it fails
+    #to perform the operation. In the other hand all the other scaling actions work properly
 
+    action_probs = agent.actor(np.array([state]))
+    action = np.random.choice(len(agent.action), p=action_probs.numpy()[0])
+
+    if action + state[2] > 9 or action + state[2] < 1:
+        action =0
+    target_pods = state[2] + action
+    
     print(f'\u27A1 Step of Randomnes {step_count}, with Action={action} and State: {state}, Going to scale to: {target_pods}')
     file = '/tmp/shared_file.json'
 
@@ -164,10 +70,12 @@ def Post(agent,state,step_count):
     with open(file, 'w') as file:
         json.dump({'action': int(target_pods)}, file)
 
-    # Wait for Kubernetes to reach the target
+
     start_time = time.time()
-    #keda might have a bug. When reaching max Replicas e.g. 10 and trying to scale down to 9, it fails
-    #to perform the operation. In the other hand all the other scaling actions work properly
+
+    ####################################
+    ########## Wait for Scaling ########
+    ####################################
     while True:
         try:
             curr_state = Prometheufunctions().fetchState()[2] 
@@ -177,18 +85,20 @@ def Post(agent,state,step_count):
             continue
 
         if curr_state == target_pods:
-            return action, True
-
+            return action, action_probs, True
 
         elapsed_time = time.time() - start_time  # Calculate the elapsed time
         #Grace Period
         if elapsed_time > 45:
             print("\u26A0 Error: Timeout exceeded while waiting for pods to scale! Restarting...")
-            return 0,False
+            return 0,0,False
             #print("Timeout waiting for pods to scale.")
         
         time.sleep(5)
-
+    ####################################
+    ####################################
+    ####################################
+    
 def futureCheck(): 
     #Counter for the number of maximum pods --Done
     #System Stability -- Can't define
@@ -211,11 +121,8 @@ def main():
         return [0,0,0]
 
     state_size = 3
-    agent = DQNAgent(state_size)
+    a2c = A2CAgent(state_size)
     episodes = 1000
-    batch_size = 64
-    replay_frequency = 64
-    target_update_frequency = 50
     step_count = 0
     
     for i in range(episodes):
@@ -223,46 +130,63 @@ def main():
         print('\n\n')
         print(f'\u27A1 Episode {i+1}/{episodes}')
         
-        while not done:
+        for _ in range(30):
+                
             step_count += 1
-            #if step_count==1 and os.path.exists('Scaler.weights.h5'):
-            #    agent.model.load_weights('Scaler.weights.h5')
-            # Perform the action
+        
             action = 0
             flag =False
+
             while not flag:
-                action,flag = Post(agent, state, step_count)
+                action, action_probs ,flag = Post(a2c, state, step_count)
+
             if action < 0:
                 print("\u2705 Scaled down Saccessfuly")
             elif action > 0: 
                 print("\u2705 Scaled up Saccessfuly")
             else:
                 print("\u2705 Remaining in the same replica count")
+
             print('\U0001F504 Stabilizing for 60 secs...')
             time.sleep(60)
+
             try:
                 print("\U0001F504 Fetching Data for the next state...")
                 next_state, _ = futureCheck()
             except Exception as e:
                 print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
                 next_state=[0,0,0]
-            reward = agent.reward(next_state)
-            print(f'\u2705 Calculated the Reward: {reward}')
-            # Remember the experience
-            agent.remember(state, int(action), reward, next_state)
-            state = next_state
-            
-            # Train the agent (experience replay) 
-            if len(agent.memory) >= batch_size and step_count % replay_frequency == 0:
-                print("\U0001F504 Training...")
-                agent.replay(batch_size)
-                done = True
 
-            if step_count % target_update_frequency == 0:
-                
-                print("\U0001F504 Updating Values of Target...")
-                agent.update_target_model()
-            
+            reward = a2c.reward(next_state)
+            print(f'\u2705 Calculated the Reward: {reward}')
+
+            ######### A2C #########
+            try:
+                with tf.GradientTape() as tape:
+                    state_value = a2c.critic(np.array([state]))[0, 0]
+                    next_state_value = a2c.critic(np.array([next_state]))[0, 0]
+                    advantage = reward + a2c.gamma * next_state_value - state_value
+                    actor_loss = -tf.math.log(action_probs[0, action]) * advantage
+                    critic_loss = tf.square(advantage)
+                episode_reward += reward
+
+                # Update actor and critic
+                actor_gradients = tape.gradient(actor_loss, a2c.actor.trainable_variables)
+                critic_gradients = tape.gradient(critic_loss, a2c.critic.trainable_variables)
+                a2c.actor_optimizer.apply_gradients(zip(actor_gradients, a2c.actor.trainable_variables))
+                a2c.critic_optimizer.apply_gradients(zip(critic_gradients, a2c.critic.trainable_variables))
+            except Exception as e:
+                print(f'\u26A0 Error during training step: {e}')
+            state = next_state
+            if done:
+                break
+            print(f'\u2705 Actor Loss: {actor_loss.numpy()}, Critic Loss: {critic_loss.numpy()}')
+
+        # Save rewards after each episode
+        a2c.rewards.append(episode_reward)
+        save_rewards_to_file(a2c.rewards)
+        a2c.losses.append((actor_loss.numpy(), critic_loss.numpy()))
+        save_losses_to_file(a2c.losses)
 
 if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
