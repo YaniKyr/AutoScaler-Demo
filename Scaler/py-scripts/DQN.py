@@ -1,3 +1,4 @@
+#TODO: Fill Replay Buffer and reduce Train period
 import numpy as np
 import json
 from functions import Prometheufunctions 

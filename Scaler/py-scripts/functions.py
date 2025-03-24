@@ -1,3 +1,4 @@
+#TODO : Fetch vectors of data, not just scalars. To fill the Replay buffer faster with more data
 from prometheus_api_client import PrometheusConnect
 import pandas as pd
 import requests
