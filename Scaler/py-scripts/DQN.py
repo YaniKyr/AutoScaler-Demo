@@ -1,3 +1,5 @@
+#TODO : Fetch vectors of data, not just scalars. To fill the Replay buffer faster with more data
+#TODO: Fill Replay Buffer and reduce Train period
 import numpy as np
 import json
 from functions import Prometheufunctions 
@@ -24,11 +26,9 @@ class DQNAgent:
         self.model = self._read_model_()
         self.target_model = self._build_model() 
         self.update_target_model()  
-        self.cpu_scaler_weight = 1.0      # Start fully imitating CPU scaler
-        self.cpu_scaler_decay = 0.95      # Decay factor per training cycle
-        self.cpu_scaler_min = 0.01         # Minimum weight 
         self.losses = []
         self.rewards = []
+
     def _build_model(self):
         #print(f'At build model State size: {self.state_size}')
         model = Sequential()
@@ -43,15 +43,15 @@ class DQNAgent:
         return model
     
     def _read_model_(self):
-        #try:
-            #model = load_model('scaler.model.h5')
-            #model.compile(optimizer=Adam(learning_rate=0.001), loss=MeanSquaredError())
-            #model.build()
-            #model.summary()
-            #print("\u2705 Model successfully loaded")
-            #return model
-        #except Exception as e:
-        #print(f"\u26A0 Error loading model: {e}")
+        try:
+            model = load_model('scaler.model.h5')
+            model.compile(optimizer=Adam(learning_rate=0.001), loss=MeanSquaredError())
+            model.build()
+            model.summary()
+            print("\u2705 Model successfully loaded")
+            return model
+        except Exception as e:
+            print(f"\u26A0 Error loading model: {e}")
         return self._build_model()
 
     def update_target_model(self):        
@@ -88,9 +88,11 @@ class DQNAgent:
             return 0
         return chosen_action
 
-    def reward(self,data):
+    def reward(self,data, RTT=0, flooded = False):
         try:
-            RTT = int(round(float(Prometheufunctions().getRTT())))
+            if not flooded:
+                RTT = int(round(float(Prometheufunctions().getRTT())))
+
             return data[0] + (1 / (1 + RTT / 250) if RTT < 250 else -2)
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
@@ -141,6 +143,26 @@ class DQNAgent:
         save_rewards_to_file(self.rewards)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+    def floodData(self,Prometheus):
+        cpu, reqs, pods, response_t = Prometheus.floodReplayBuffer(2)
+        cpu = np.nan_to_num(cpu)
+        reqs = np.nan_to_num(reqs)
+        pods = np.nan_to_num(pods)
+        response_t = np.nan_to_num(response_t)
+
+        for idx, (c, r, p, t) in enumerate(zip(cpu, reqs, pods, response_t)):
+            if c == r == p == t == 0:
+                continue
+            if idx == len(cpu) -1:
+                break
+            state = [c, r, p]
+            action = np.random.choice(self.action)  
+            reward = self.reward(state,p,True)
+           
+
+            self.remember(state, action[idx+1] - action[idx], reward, [cpu[idx+1], reqs[idx+1], pods[idx+1]])
+            print(f'\u2705 Flooded data for step {idx+1} with action {action[idx+1] - action[idx]} and reward {reward}')
 
 
 
