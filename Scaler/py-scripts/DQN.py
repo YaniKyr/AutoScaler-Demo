@@ -57,7 +57,7 @@ def Post(agent,state,step_count):
     #to perform the operation. In the other hand all the other scaling actions work properly
 
     action_probs = agent.actor(np.array([state]))
-    action = np.random.choice(len(agent.action), p=action_probs.numpy()[0])
+    action = np.random.choice(agent.action, p=action_probs.numpy()[0])
 
     if action + state[2] > 9 or action + state[2] < 1:
         action =0
@@ -178,6 +178,7 @@ def main():
             except Exception as e:
                 print(f'\u26A0 Error during training step: {e}')
             state = next_state
+            del tape
             if done:
                 break
             print(f'\u2705 Actor Loss: {actor_loss.numpy()}, Critic Loss: {critic_loss.numpy()}')
