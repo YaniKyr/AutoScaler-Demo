@@ -192,26 +192,35 @@ def main():
             
         try:
             with tf.GradientTape(persistent = True) as tape:
-                state_values = a2c.critic(np.array(states))
-                next_state_values = a2c.critic(np.array(next_states))
-                advantages = np.array(rewards) + a2c.gamma * np.array(next_state_values) - np.array(state_values)
+                try:
+                    state_values = a2c.critic(np.array(states))
+                    next_state_values = a2c.critic(np.array(next_states))
+                    advantages = np.array(rewards) + a2c.gamma * np.array(next_state_values) - np.array(state_values)
+                except Exception as e:
+                    print("\u26A0 Error during critic calculation: ", e)
                 actor_losses = []
                 critic_losses = []
-                for idx, (advantage, action_prob, action) in enumerate(zip(advantages, action_probs, actions)):
-                    actor_loss = tf.math.log(action_prob[0, action]) * advantage
-                    critic_loss = tf.square(advantage)
-                    actor_losses.append(actor_loss)
-                    critic_losses.append(critic_loss)
-                    episode_reward += rewards[idx]
+                try:
+                    for idx, (advantage, action_prob, action) in enumerate(zip(advantages, action_probs, actions)):
+
+                        actor_loss = tf.math.log(action_prob[0, action]) * advantage
+                        critic_loss = tf.square(advantage)
+                        actor_losses.append(actor_loss)
+                        critic_losses.append(critic_loss)
+                        episode_reward += rewards[idx]
+                except Exception as e:
+                    print("\u26A0 Error during loss calculation: ", e)
 
                 total_actor_loss = tf.reduce_mean(actor_losses)
                 total_critic_loss = tf.reduce_mean(critic_losses)
-
-                # Update actor and critic
-                actor_gradients = tape.gradient(total_actor_loss, a2c.actor.trainable_variables)
-                critic_gradients = tape.gradient(total_critic_loss, a2c.critic.trainable_variables)
-                a2c.actor_optimizer.apply_gradients(zip(actor_gradients, a2c.actor.trainable_variables))
-                a2c.critic_optimizer.apply_gradients(zip(critic_gradients, a2c.critic.trainable_variables))
+                try:
+                    # Update actor and critic
+                    actor_gradients = tape.gradient(total_actor_loss, a2c.actor.trainable_variables)
+                    critic_gradients = tape.gradient(total_critic_loss, a2c.critic.trainable_variables)
+                    a2c.actor_optimizer.apply_gradients(zip(actor_gradients, a2c.actor.trainable_variables))
+                    a2c.critic_optimizer.apply_gradients(zip(critic_gradients, a2c.critic.trainable_variables))
+                except Exception as e:
+                    print("\u26A0 Error during gradient application: ", e)
         except Exception as e:
                 print(f'\u26A0 Error during training step: {e}')
         print(f'\u2705 Actor Loss: {actor_loss.numpy()}, Critic Loss: {critic_loss.numpy()}')
