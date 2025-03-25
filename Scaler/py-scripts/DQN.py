@@ -168,13 +168,13 @@ def main():
                     advantage = reward + a2c.gamma * next_state_value - state_value
                     actor_loss = -tf.math.log(action_probs[0, action]) * advantage
                     critic_loss = tf.square(advantage)
-                episode_reward += reward
+                    episode_reward += reward
 
                 # Update actor and critic
-                actor_gradients = tape.gradient(actor_loss, a2c.actor.trainable_variables)
-                critic_gradients = tape.gradient(critic_loss, a2c.critic.trainable_variables)
-                a2c.actor_optimizer.apply_gradients(zip(actor_gradients, a2c.actor.trainable_variables))
-                a2c.critic_optimizer.apply_gradients(zip(critic_gradients, a2c.critic.trainable_variables))
+                    actor_gradients = tape.gradient(actor_loss, a2c.actor.trainable_variables)
+                    critic_gradients = tape.gradient(critic_loss, a2c.critic.trainable_variables)
+                    a2c.actor_optimizer.apply_gradients(zip(actor_gradients, a2c.actor.trainable_variables))
+                    a2c.critic_optimizer.apply_gradients(zip(critic_gradients, a2c.critic.trainable_variables))
             except Exception as e:
                 print(f'\u26A0 Error during training step: {e}')
             state = next_state
