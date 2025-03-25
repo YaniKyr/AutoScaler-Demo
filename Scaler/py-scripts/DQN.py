@@ -147,8 +147,8 @@ def main():
             else:
                 print("\u2705 Remaining in the same replica count")
 
-            print('\U0001F504 Stabilizing for 60 secs...')
-            time.sleep(60)
+            print('\U0001F504 Stabilizing for 30 secs...')
+            time.sleep(30)
 
             try:
                 print("\U0001F504 Fetching Data for the next state...")
@@ -162,7 +162,7 @@ def main():
 
             ######### A2C #########
             try:
-                with tf.GradientTape() as tape:
+                with tf.GradientTape(persistent = True) as tape:
                     state_value = a2c.critic(np.array([state]))[0, 0]
                     next_state_value = a2c.critic(np.array([next_state]))[0, 0]
                     advantage = reward + a2c.gamma * next_state_value - state_value
