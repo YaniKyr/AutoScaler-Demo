@@ -124,7 +124,7 @@ def main():
     a2c = A2CAgent(state_size)
     episodes = 1000
     step_count = 0
-    
+    episode_reward =0
     for i in range(episodes):
         done = False
         print('\n\n')
