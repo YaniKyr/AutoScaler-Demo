@@ -129,65 +129,65 @@ def main():
         done = False
         print('\n\n')
         print(f'\u27A1 Episode {i+1}/{episodes}')
-        
-        for _ in range(30):
+        with tf.GradientTape(persistent=True) as tape:
+            for _ in range(30):
+                    
+                step_count += 1
+            
+                action = 0
+                flag =False
+
+                while not flag:
+                    action, action_probs ,flag = Post(a2c, state, step_count)
+
+                if action < 0:
+                    print("\u2705 Scaled down Saccessfuly")
+                elif action > 0: 
+                    print("\u2705 Scaled up Saccessfuly")
+                else:
+                    print("\u2705 Remaining in the same replica count")
+
+                print('\U0001F504 Stabilizing for 30 secs...')
+                time.sleep(30)
+
+                try:
+                    print("\U0001F504 Fetching Data for the next state...")
+                    next_state, _ = futureCheck()
+                except Exception as e:
+                    print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
+                    next_state=[0,0,0]
+
+                reward = a2c.reward(next_state)
+                print(f'\u2705 Calculated the Reward: {reward}')
+
+                ######### A2C #########
+                try:
                 
-            step_count += 1
-        
-            action = 0
-            flag =False
-
-            while not flag:
-                action, action_probs ,flag = Post(a2c, state, step_count)
-
-            if action < 0:
-                print("\u2705 Scaled down Saccessfuly")
-            elif action > 0: 
-                print("\u2705 Scaled up Saccessfuly")
-            else:
-                print("\u2705 Remaining in the same replica count")
-
-            print('\U0001F504 Stabilizing for 30 secs...')
-            time.sleep(30)
-
-            try:
-                print("\U0001F504 Fetching Data for the next state...")
-                next_state, _ = futureCheck()
-            except Exception as e:
-                print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
-                next_state=[0,0,0]
-
-            reward = a2c.reward(next_state)
-            print(f'\u2705 Calculated the Reward: {reward}')
-
-            ######### A2C #########
-            try:
-                with tf.GradientTape() as tape:
                     state_value = a2c.critic(np.array([state]))[0, 0]
                     next_state_value = a2c.critic(np.array([next_state]))[0, 0]
                     advantage = reward + a2c.gamma * next_state_value - state_value
                     actor_loss = -tf.math.log(action_probs[0, action]) * advantage
                     critic_loss = tf.square(advantage)
-                episode_reward += reward
+                    episode_reward += reward
 
-            # Update actor and critic
-                actor_gradients = tape.gradient(actor_loss, a2c.actor.trainable_variables)
-                critic_gradients = tape.gradient(critic_loss, a2c.critic.trainable_variables)
-                a2c.actor_optimizer.apply_gradients(zip(actor_gradients, a2c.actor.trainable_variables))
-                a2c.critic_optimizer.apply_gradients(zip(critic_gradients, a2c.critic.trainable_variables))
-            except Exception as e:
-                print(f'\u26A0 Error during training step: {e}')
-            state = next_state
-            del tape
-            if done:
-                break
-            print(f'\u2705 Actor Loss: {actor_loss.numpy()}, Critic Loss: {critic_loss.numpy()}')
+                # Update actor and critic
+                    actor_gradients = tape.gradient(actor_loss, a2c.actor.trainable_variables)
+                    critic_gradients = tape.gradient(critic_loss, a2c.critic.trainable_variables)
+                    a2c.actor_optimizer.apply_gradients(zip(actor_gradients, a2c.actor.trainable_variables))
+                    a2c.critic_optimizer.apply_gradients(zip(critic_gradients, a2c.critic.trainable_variables))
+                except Exception as e:
+                    print(f'\u26A0 Error during training step: {e}')
+                state = next_state
+                
+                if done:
+                    break
+                print(f'\u2705 Actor Loss: {actor_loss.numpy()}, Critic Loss: {critic_loss.numpy()}')
 
-        # Save rewards after each episode
-        a2c.rewards.append(episode_reward)
-        save_rewards_to_file(a2c.rewards)
-        a2c.losses.append((actor_loss.numpy(), critic_loss.numpy()))
-        save_losses_to_file(a2c.losses)
+            # Save rewards after each episode
+            a2c.rewards.append(episode_reward)
+            save_rewards_to_file(a2c.rewards)
+            a2c.losses.append((actor_loss.numpy(), critic_loss.numpy()))
+            save_losses_to_file(a2c.losses)
 
 if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
