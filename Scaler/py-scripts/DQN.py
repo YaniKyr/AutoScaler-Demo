@@ -162,13 +162,13 @@ def main():
 
             ######### A2C #########
             try:
-                with tf.GradientTape(persistent = True) as tape:
+                with tf.GradientTape() as tape:
                     state_value = a2c.critic(np.array([state]))[0, 0]
                     next_state_value = a2c.critic(np.array([next_state]))[0, 0]
                     advantage = reward + a2c.gamma * next_state_value - state_value
                     actor_loss = -tf.math.log(action_probs[0, action]) * advantage
                     critic_loss = tf.square(advantage)
-                    episode_reward += reward
+                episode_reward += reward
 
             # Update actor and critic
                 actor_gradients = tape.gradient(actor_loss, a2c.actor.trainable_variables)
