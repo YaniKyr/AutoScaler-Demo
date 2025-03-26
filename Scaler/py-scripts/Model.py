@@ -28,7 +28,7 @@ class A2CAgent:
 
     def build_linear_actor_critic(self):
         inputs = tf.keras.Input(shape=(self.state_size,))
-        actor = tf.keras.layers.Dense(self.action, activation="softmax")(inputs)
+        actor = tf.keras.layers.Dense(self.action_size, activation="softmax")(inputs)
         critic = tf.keras.layers.Dense(1)(inputs)
         return tf.keras.Model(inputs, [actor, critic])
 
