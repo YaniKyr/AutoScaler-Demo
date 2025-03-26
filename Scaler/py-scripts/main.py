@@ -94,7 +94,7 @@ def main():
     try:
         state,_ = Prometheufunctions().floodReplayBuffer(20)
     except Exception as e:
-        print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
+        print(f'\u26A0 Error_1 {e}, Prometheus Error, during data retrieval')
         return [0,0,0]
     
     
