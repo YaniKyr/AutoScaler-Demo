@@ -47,7 +47,7 @@ class A2CAgent:
         critic = tf.keras.layers.Dense(1)(x)
         return tf.keras.Model(inputs, [actor, critic])
     
-    def select_best_actor(actors, state):
+    def select_best_actor(self,actors, state):
         state = np.expand_dims(state, axis=0)  # Add batch dimension
         advantages = []
 
