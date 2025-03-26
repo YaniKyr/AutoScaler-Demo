@@ -33,7 +33,8 @@ class Prometheufunctions:
         reqs_data = self.getQueryRange(self.queries['userRequests'], start_time, end_time)
         pods_data = self.getQueryRange(self.queries['numpods'], start_time, end_time)
         rt_obs = self.getQueryRange(self.queries['RT_obs'], start_time, end_time)
-
+        print(f'CPU: {cpu_data}')
+        print(f'Reqs: {reqs_data}')
         cpu = [float(point[1]) for point in cpu_data[0]['values']]
         reqs = [int(point[1]) for point in reqs_data[0]['values']]
         pods = [int(point[1]) for point in pods_data[0]['values']]
