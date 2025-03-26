@@ -92,7 +92,7 @@ def main():
     trial_period = 10
 
     try:
-        state = Prometheufunctions().fetchState()
+        state = Prometheufunctions().floodReplayBuffer()
     except Exception as e:
         print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
         return [0,0,0]
