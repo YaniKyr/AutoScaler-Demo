@@ -6,14 +6,15 @@ import tensorflow as tf
 
 class A2CAgent:
     def __init__(self, state_size):
-        self.state_size = state_size
-        self.action_size = len(self.action)
+        
 
         self.rewards = []
         self.gamma = 0.9
         self.action = [-2, -1, 0, 1, 2]
         self.losses = []
         self.rewards = []
+        self.state_size = state_size
+        self.action_size = len(self.action)
         self.actor = tf.keras.Sequential([
             tf.keras.layers.Dense(32, activation='relu'),
             tf.keras.layers.Dense(len(self.action), activation='softmax')])
