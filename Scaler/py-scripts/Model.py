@@ -33,17 +33,17 @@ class A2CAgent:
         return tf.keras.Model(inputs, [actor, critic])
 
     def build_shallow_mlp_actor_critic(self):
-        inputs = tf.keras.Input(shape=(self.state_dim,))
+        inputs = tf.keras.Input(shape=(self.state_size,))
         x = tf.keras.layers.Dense(16, activation="relu")(inputs)
-        actor = tf.keras.layers.Dense(self.action_dim, activation="softmax")(x)
+        actor = tf.keras.layers.Dense(self.action_size, activation="softmax")(x)
         critic = tf.keras.layers.Dense(1)(x)
         return tf.keras.Model(inputs, [actor, critic])
 
     def build_deep_mlp_actor_critic(self):
-        inputs = tf.keras.Input(shape=(self.state_dim,))
+        inputs = tf.keras.Input(shape=(self.state_size,))
         x = tf.keras.layers.Dense(32, activation="relu")(inputs)
         x = tf.keras.layers.Dense(32, activation="relu")(x)
-        actor = tf.keras.layers.Dense(self.action_dim, activation="softmax")(x)
+        actor = tf.keras.layers.Dense(self.action_size, activation="softmax")(x)
         critic = tf.keras.layers.Dense(1)(x)
         return tf.keras.Model(inputs, [actor, critic])
     
