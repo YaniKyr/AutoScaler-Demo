@@ -101,9 +101,9 @@ def main():
     model = md.A2CAgent(len(state))
     n = 3 #keep n very small
     actors = [
-        model.build_linear_actor_critic(model.state_size, model.action_size),
-        model.build_shallow_mlp_actor_critic(model.state_size, model.action_size),
-        model.build_deep_mlp_actor_critic(model.state_size, model.action_size)
+        model.build_linear_actor_critic(),
+        model.build_shallow_mlp_actor_critic(),
+        model.build_deep_mlp_actor_critic()
     ]
     
     optimizers = [tf.keras.optimizers.Adam(0.001) for _ in actors]
