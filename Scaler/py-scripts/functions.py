@@ -38,8 +38,6 @@ class Prometheufunctions:
         reqs = [float(point[1]) for point in reqs_data[0]['values']]
         pods = [int(point[1]) for point in pods_data[0]['values']]
         rt = [float(point[1]) for point in rt_obs[0]['values']]
-        print("Flooded Replay Buffer")
-        print(cpu)
         return [cpu, reqs, pods], rt
     
     def query(self,query):
