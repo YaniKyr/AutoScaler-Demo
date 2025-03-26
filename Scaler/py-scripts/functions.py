@@ -38,7 +38,7 @@ class Prometheufunctions:
         reqs = [int(point[1]) for point in reqs_data[0]['values']]
         pods = [int(point[1]) for point in pods_data[0]['values']]
         rt = [float(point[1]) for point in rt_obs[0]['values']]
-        return cpu, reqs, pods, rt
+        return [cpu, reqs, pods], rt
     
     def query(self,query):
         #import ipdb; ipdb.set_trace()
