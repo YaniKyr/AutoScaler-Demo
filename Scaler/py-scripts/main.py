@@ -121,7 +121,7 @@ def main():
 
             flag =False
             while not flag:
-                action, action_probs, value, flag = Post(model, state, step_count)
+                action, action_probs, value, flag = Post(model, actors, state, step_count)
 
 
             ############################################################
