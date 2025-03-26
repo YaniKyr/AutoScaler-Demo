@@ -35,7 +35,7 @@ class Prometheufunctions:
         rt_obs = self.getQueryRange(self.queries['RT_obs'], start_time, end_time)
         
         cpu = [float(point[1]) for point in cpu_data[0]['values']]
-        reqs = [int(point[1]) for point in reqs_data[0]['values']]
+        reqs = [float(point[1]) for point in reqs_data[0]['values']]
         pods = [int(point[1]) for point in pods_data[0]['values']]
         rt = [float(point[1]) for point in rt_obs[0]['values']]
         print("Flooded Replay Buffer")
