@@ -146,6 +146,7 @@ class DQNAgent:
         response_t = np.nan_to_num(response_t)
 
         for idx, (c, r, p, t) in enumerate(zip(cpu, reqs, pods, response_t)):
+            print("Before Storm")
             if idx == len(cpu) -1:
                 break
             if c == r == p == t == 0:
@@ -156,7 +157,7 @@ class DQNAgent:
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
             reward = self.reward(next_state,p,True)
             # Store the experience in the replay buffer
-            
+            print("After Storm")
 
             self.remember(state, action[idx+1] - action[idx], reward, next_state)
             print(f'\u2705 Flooded data for step {idx+1} with action {action[idx+1] - action[idx]} and reward {reward}')
