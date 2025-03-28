@@ -85,7 +85,7 @@ class DQNAgent:
             if not flooded:
                 RTT = int(round(float(Prometheufunctions().getRTT())))
 
-            return data[0] + ( RTT / 250 if RTT < 250 else -2)
+            return data[0] * (  1 if RTT < 250 else -1)
         except Exception as e:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
             return 0
