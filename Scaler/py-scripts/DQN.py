@@ -157,9 +157,10 @@ class DQNAgent:
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
             reward = self.reward(next_state,p,True)
             # Store the experience in the replay buffer
-            print("After Storm")
+            
 
             self.remember(state, action[idx+1] - action[idx], reward, next_state)
+            print("After Storm")
             print(f'\u2705 Flooded data for step {idx+1} with action {action[idx+1] - action[idx]} and reward {reward}')
 
 
