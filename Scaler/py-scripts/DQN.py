@@ -231,14 +231,12 @@ def main():
     
     try:
         agent.floodData(data)
-        print("\U0001F504 Flooding Data...")
     except Exception as e:
         print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
         return [0,0,0]
     # Print the replay buffer for debugging
-    print("\U0001F4CA Replay Buffer Contents:")
-    for idx, (state, action, reward, next_state) in enumerate(agent.memory):
-        print(f"Step {idx + 1}: State={state}, Action={action}, Reward={reward}, Next State={next_state}")
+    print("\U0001F4CA Replay Buffer Loaded")
+    
     for i in range(episodes):
 
         done = False
