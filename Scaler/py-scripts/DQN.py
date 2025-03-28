@@ -263,8 +263,8 @@ def main():
                 print("\u2705 Scaled up Saccessfuly")
             else:
                 print("\u2705 Remaining in the same replica count")
-            print('\U0001F504 Stabilizing for 40 secs...')
-            time.sleep(40)
+            print('\U0001F504 Stabilizing for 50 secs...')
+            time.sleep(50)
             try:
                 print("\U0001F504 Fetching Data for the next state...")
                 next_state, _ = futureCheck()
