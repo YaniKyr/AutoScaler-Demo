@@ -218,11 +218,7 @@ def futureCheck():
 def main():
     data = Prometheufunctions()
     
-    try:
-        state = data.fetchState()
-    except Exception as e:
-        print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
-        return [0,0,0]
+   
 
     state_size = 3
     agent = DQNAgent(state_size)
@@ -238,6 +234,12 @@ def main():
         print(f'\u27A1 Episode {i+1}/{episodes}')
         
         while not done:
+            try:
+                agent.floodData(data)
+            except Exception as e:
+                print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
+                return [0,0,0]
+            
             step_count += 1
             #if step_count==1 and os.path.exists('Scaler.weights.h5'):
             #    agent.model.load_weights('Scaler.weights.h5')
