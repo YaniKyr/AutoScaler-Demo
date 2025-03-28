@@ -145,16 +145,13 @@ class DQNAgent:
         print(f"CPU: {cpu}")
         response_t = np.nan_to_num(response_t)
 
-        for idx, (c, r, p, t) in enumerate(zip(cpu, reqs, pods, response_t)):
-            
-            if idx == len(cpu):
-                break
-            if c == r == p == t == 0:
+        for idx in range(len(cpu) - 1):
+            if cpu[idx] == 0 and reqs[idx] == 0 and pods[idx] == 0:
                 continue
-            state = [c, r, p]
+            state = [cpu[idx], reqs[idx], pods[idx]]
             
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
-            reward = self.reward(next_state,t,True)
+            reward = self.reward(next_state,response_t[idx+1],True)
             action_step = pods[idx+1] - pods[idx]
             
             self.remember(state, action_step, reward, next_state)
