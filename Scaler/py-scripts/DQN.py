@@ -156,7 +156,7 @@ class DQNAgent:
             print("After Storm")
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
             print("After Storm")
-            reward = self.reward(next_state,p,0,True)
+            reward = self.reward(next_state,t,True)
             action_step = p[idx+1] - p[idx]
             print("After Storm")
             # Store the experience in the replay buffer
@@ -272,7 +272,7 @@ def main():
             except Exception as e:
                 print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
                 next_state=[0,0,0]
-            reward = agent.reward(next_state,data.getRTT() ,flooded=False)
+            reward = agent.reward(next_state,0 ,flooded=False)
             print(f'\u2705 Calculated the Reward: {reward}')
             # Remember the experience
             agent.remember(state, int(action), reward, next_state)
