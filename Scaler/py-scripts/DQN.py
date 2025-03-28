@@ -140,7 +140,7 @@ class DQNAgent:
             self.epsilon *= self.epsilon_decay
 
     def floodData(self,Prometheus):
-        cpu, reqs, pods, response_t = Prometheus.floodReplayBuffer(128)
+        cpu, reqs, pods, response_t = Prometheus.floodReplayBuffer(240)
         cpu = np.nan_to_num(cpu)
         reqs = np.nan_to_num(reqs)
         pods = np.nan_to_num(pods)
