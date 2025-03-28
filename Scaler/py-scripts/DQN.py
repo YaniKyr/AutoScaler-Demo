@@ -229,6 +229,7 @@ def main():
     step_count = 0
     
     for i in range(episodes):
+
         done = False
         print('\n\n')
         print(f'\u27A1 Episode {i+1}/{episodes}')
@@ -236,6 +237,7 @@ def main():
         while not done:
             try:
                 agent.floodData(data)
+                print("\U0001F504 Flooding Data...")
             except Exception as e:
                 print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
                 return [0,0,0]
