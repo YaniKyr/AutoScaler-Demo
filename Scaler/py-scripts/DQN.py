@@ -155,6 +155,7 @@ class DQNAgent:
             
             print("After Storm")
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
+            print("After Storm")
             reward = self.reward(next_state,p,True)
             action_step = p[idx+1] - p[idx]
             print("After Storm")
