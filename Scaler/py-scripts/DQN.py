@@ -141,8 +141,6 @@ class DQNAgent:
         cpu = np.nan_to_num(cpu)
         reqs = np.nan_to_num(reqs)
         pods = np.nan_to_num(pods)
-        print("\u2705 Flooded data for the replay buffer")
-        print(f"CPU: {cpu}")
         response_t = np.nan_to_num(response_t)
 
         for idx in range(len(cpu) - 1):
