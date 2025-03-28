@@ -246,8 +246,10 @@ def main():
             #if step_count==1 and os.path.exists('Scaler.weights.h5'):
             #    agent.model.load_weights('Scaler.weights.h5')
             # Perform the action
+            state = data.fetchState()
             action = 0
             flag =False
+
             while not flag:
                 action,flag = Post(agent, state, step_count)
             if action < 0:
@@ -268,7 +270,7 @@ def main():
             print(f'\u2705 Calculated the Reward: {reward}')
             # Remember the experience
             agent.remember(state, int(action), reward, next_state)
-            state = next_state
+            
             
             # Train the agent (experience replay) 
             if len(agent.memory) >= batch_size and step_count % replay_frequency == 0:
