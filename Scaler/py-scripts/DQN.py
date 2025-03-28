@@ -236,7 +236,7 @@ def main():
     agent = DQNAgent(state_size)
     episodes = 1000
     batch_size = 64
-    replay_frequency = 16
+    replay_frequency = 2
     target_update_frequency = 100
     step_count = 0
     
