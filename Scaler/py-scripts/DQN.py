@@ -90,6 +90,7 @@ class DQNAgent:
             print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
             return 0
 
+
     def replay(self, batch_size):
 
         if len(self.memory) < batch_size:
@@ -228,6 +229,16 @@ def main():
     target_update_frequency = 100
     step_count = 0
     
+    try:
+        agent.floodData(data)
+        print("\U0001F504 Flooding Data...")
+    except Exception as e:
+        print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
+        return [0,0,0]
+    # Print the replay buffer for debugging
+    print("\U0001F4CA Replay Buffer Contents:")
+    for idx, (state, action, reward, next_state) in enumerate(agent.memory):
+        print(f"Step {idx + 1}: State={state}, Action={action}, Reward={reward}, Next State={next_state}")
     for i in range(episodes):
 
         done = False
@@ -235,12 +246,6 @@ def main():
         print(f'\u27A1 Episode {i+1}/{episodes}')
         
         while not done:
-            try:
-                agent.floodData(data)
-                print("\U0001F504 Flooding Data...")
-            except Exception as e:
-                print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
-                return [0,0,0]
             
             step_count += 1
             #if step_count==1 and os.path.exists('Scaler.weights.h5'):
