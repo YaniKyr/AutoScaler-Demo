@@ -116,8 +116,9 @@ class DQNAgent:
             print(f'\u26A0 Exception {e}, error during the target model prediction')
 
         for idx, i in enumerate(minibatch):
-            _,action, reward, _ = self.memory[i]
-            q_values[idx][action] = reward + self.gamma * np.amax(q_values_next[idx])
+            _, action, reward, _ = self.memory[i]
+            target = reward + self.gamma * np.amax(q_values_next[idx])
+            q_values[idx][action] = max(-1, min(1, target)) 
             
 
         
@@ -153,7 +154,7 @@ class DQNAgent:
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
             reward = self.reward(next_state,response_t[idx+1],True)
             action_step = pods[idx+1] - pods[idx]
-            
+            print(f"Action Step: {action_step}")
             self.remember(state, action_step, reward, next_state)
             
             #print(f'\u2705 Flooded data for step {idx+1} with action {action_step} and reward {reward}')
