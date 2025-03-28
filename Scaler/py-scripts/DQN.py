@@ -43,15 +43,7 @@ class DQNAgent:
         return model
     
     def _read_model_(self):
-        try:
-            model = load_model('scaler.model.h5')
-            model.compile(optimizer=Adam(learning_rate=0.001), loss=MeanSquaredError())
-            model.build()
-            model.summary()
-            print("\u2705 Model successfully loaded")
-            return model
-        except Exception as e:
-            print(f"\u26A0 Error loading model: {e}")
+
         return self._build_model()
 
     def update_target_model(self):        
