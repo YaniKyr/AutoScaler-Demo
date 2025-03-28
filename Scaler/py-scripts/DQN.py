@@ -228,7 +228,7 @@ def main():
     replay_frequency = 2
     target_update_frequency = 100
     step_count = 0
-    
+    print('\n\n')
     try:
         agent.floodData(data)
     except Exception as e:
@@ -240,7 +240,7 @@ def main():
     for i in range(episodes):
 
         done = False
-        print('\n\n')
+        
         print(f'\u27A1 Episode {i+1}/{episodes}')
         
         while not done:
