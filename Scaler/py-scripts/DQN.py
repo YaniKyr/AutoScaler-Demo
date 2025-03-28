@@ -95,9 +95,10 @@ class DQNAgent:
 
         if len(self.memory) < batch_size:
             return
-
+        print(f"========================Before Training=============================")
         minibatch = np.random.choice(len(self.memory), batch_size, replace=False)
-        
+
+        print(f"Replay - Batch Size: {batch_size}, Memory Size: {len(self.memory)}")
         sdata = np.array([self.memory[i][0] for i in minibatch])
         min_vals = np.min(sdata, axis=0)
         max_vals = np.max(sdata, axis=0)
