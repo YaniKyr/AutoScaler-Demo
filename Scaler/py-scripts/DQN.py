@@ -153,7 +153,7 @@ class DQNAgent:
             
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
             reward = self.reward(next_state,response_t[idx+1],True)
-            action_step = pods[idx+1] - pods[idx]
+            action_step = max(min(pods[idx+1] - pods[idx], 2), -2)
             print(f"Action Step: {action_step}")
             self.remember(state, action_step, reward, next_state)
             
