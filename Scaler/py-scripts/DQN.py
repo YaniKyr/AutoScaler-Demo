@@ -157,7 +157,7 @@ class DQNAgent:
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
             print("After Storm")
             reward = self.reward(next_state,t,True)
-            action_step = p[idx+1] - p[idx]
+            action_step = pods[idx+1] - pods[idx]
             print("After Storm")
             # Store the experience in the replay buffer
             print(f"State: {state}, Action: {action_step}, Reward: {reward}, Next State: {next_state}")
