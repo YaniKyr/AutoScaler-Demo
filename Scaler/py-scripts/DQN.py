@@ -141,17 +141,21 @@ class DQNAgent:
         cpu = np.nan_to_num(cpu)
         reqs = np.nan_to_num(reqs)
         pods = np.nan_to_num(pods)
+        print("\u2705 Flooded data for the replay buffer")
+        print(f"CPU: {cpu}")
         response_t = np.nan_to_num(response_t)
 
         for idx, (c, r, p, t) in enumerate(zip(cpu, reqs, pods, response_t)):
-            if c == r == p == t == 0:
-                continue
             if idx == len(cpu) -1:
                 break
+            if c == r == p == t == 0:
+                continue
             state = [c, r, p]
             action = np.random.choice(self.action)  
             reward = self.reward(state,p,True)
-           
+
+            # Store the experience in the replay buffer
+            
 
             self.remember(state, action[idx+1] - action[idx], reward, [cpu[idx+1], reqs[idx+1], pods[idx+1]])
             print(f'\u2705 Flooded data for step {idx+1} with action {action[idx+1] - action[idx]} and reward {reward}')
