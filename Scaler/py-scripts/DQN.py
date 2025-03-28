@@ -152,14 +152,15 @@ class DQNAgent:
             if c == r == p == t == 0:
                 continue
             state = [c, r, p]
-            action = np.random.choice(self.action)
-
+            
+            print("After Storm")
             next_state = [cpu[idx + 1], reqs[idx + 1], pods[idx + 1]]
             reward = self.reward(next_state,p,True)
-            action_step = action[idx+1] - action[idx]
-            # Store the experience in the replay buffer
-            print(f"State: {state}, Action: {action}, Reward: {reward}, Next State: {next_state}")
+            action_step = p[idx+1] - p[idx]
             print("After Storm")
+            # Store the experience in the replay buffer
+            print(f"State: {state}, Action: {action_step}, Reward: {reward}, Next State: {next_state}")
+            
             self.remember(state, action_step, reward, next_state)
             
             print(f'\u2705 Flooded data for step {idx+1} with action {action_step} and reward {reward}')
