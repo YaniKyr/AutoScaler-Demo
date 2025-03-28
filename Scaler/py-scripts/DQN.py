@@ -161,8 +161,8 @@ class DQNAgent:
             
 
             self.remember(state, action_step, reward, next_state)
-            
-            print(f'\u2705 Flooded data for step {idx+1} with action {} and reward {reward}')
+            print("After Storm")
+            print(f'\u2705 Flooded data for step {idx+1} with action {action_step} and reward {reward}')
 
 
 
