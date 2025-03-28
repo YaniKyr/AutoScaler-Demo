@@ -227,7 +227,7 @@ def main():
     episodes = 1000
     batch_size = 64
     replay_frequency = 2
-    target_update_frequency = 100
+    target_update_frequency = 5
     step_count = 0
     print('\n\n')
     try:
