@@ -2,5 +2,4 @@ prometheus_api_client
 pandas
 numpy
 stable_baselines3
-gym
-shimmy
+gymnasium
