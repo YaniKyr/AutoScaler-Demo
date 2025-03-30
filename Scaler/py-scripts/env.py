@@ -26,12 +26,13 @@ class KubernetesEnv(gymnasium.Env):
             dtype=np.float32
             )
 
-    def reset(self):
+    def reset(self, seed=None, option=None):
+        super().reset(seed=seed)
         print("\u2705 Resetting Environment...")
         self.scaleAction(Prometheufunctions().fetchState(),0, True) 
         time.sleep(120)
 
-        return Prometheufunctions().fetchState()
+        return Prometheufunctions().fetchState(), {}
         
         
     def step(self,  action):
