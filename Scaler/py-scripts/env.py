@@ -58,9 +58,11 @@ class KubernetesEnv(gymnasium.Env):
         print(f"\u2705 Reward: {reward}, RTT: {RTT}ms")
         
         
-        
+        info = {
+            "AvgRewards": np.mean(self.rewards) ,
+        }
 
-        return next_state, reward, False, False, np.mean(self.rewards) 
+        return next_state, reward, False, False, info
         
     
     def getReward(self,data, RTT=0, flooded = False):
