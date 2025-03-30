@@ -3,6 +3,7 @@ import json
 import time
 from functions import Prometheufunctions
 import numpy as np
+from tabulate import tabulate
 
 class KubernetesEnv(gymnasium.Env):
     def __init__(self):
@@ -91,7 +92,11 @@ class KubernetesEnv(gymnasium.Env):
             target_pods = state[2] + action
 
         file = '/tmp/shared_file.json'
-        print(f'''➡\tIter: {self.count} \n  _ResetAction={_ResetAction} \n Action={action} \n State: {state} \n Going to scale to: {target_pods}\n''')
+        table_data = [
+            ["Iter","_ResetAction","Action", "State", "Scaling to"],
+            [self.count, _ResetAction, action, state, target_pods]
+        ]
+        print(tabulate(table_data, tablefmt="grid"))
         # Write scaling action
         with open(file, 'w') as file:
             json.dump({'action': int(target_pods)}, file)
