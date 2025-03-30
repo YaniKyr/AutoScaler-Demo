@@ -71,19 +71,25 @@ class KubernetesEnv(gymnasium.Env):
                 RTT = int(round(float(Prometheufunctions().getRTT())))
 
             if data[0] == 1:
-                print("\u26A0 Warning: data[0] is 1, avoiding division by zero")
+                print("⚠ Warning: data[0] is 1, avoiding division by zero")
                 return 0
             return ((1 - np.exp(-p * (1 - (RTT / 250)))) if RTT < 250 else (1 - np.exp(-p))) / (1 - data[0]), RTT
         except Exception as e:
-            print(f'\u26A0 Error {e}, Prometheus Error, during data retrieval')
+            print(f'⚠ Error {e}, Prometheus Error, during data retrieval')
             return 0
 
     def scaleAction(self,state, action, _ResetAction = False):
         target_pods = 1
+        
+
+        if action + state[2] > 9 or action + state[2] < 1:
+            action = 0
+
         if not _ResetAction:
             target_pods = state[2] + action
+            
         file = '/tmp/shared_file.json'
-        print(f'\u27A1 _ResetAction={_ResetAction} and State: {state}  Action={action} and State: {state}, Going to scale to: {target_pods}')
+        print(f'\u27A1 _ResetAction={_ResetAction}  Action={action} and State: {state}, Going to scale to: {target_pods}')
         # Write scaling action
         with open(file, 'w') as file:
             json.dump({'action': int(target_pods)}, file)
@@ -98,7 +104,7 @@ class KubernetesEnv(gymnasium.Env):
             try:
                 curr_state = Prometheufunctions().fetchState()[2] 
             except Exception as e:
-                print(f'\u26A0 Error while fetching pods, encountered {e}')
+                print(f'⚠ Error while fetching pods, encountered {e}')
                 time.sleep(1)
                 continue
 
@@ -109,7 +115,7 @@ class KubernetesEnv(gymnasium.Env):
             elapsed_time = time.time() - start_time  # Calculate the elapsed time
             #Grace Period
             if elapsed_time > 45:
-                print("\u26A0 Error: Timeout exceeded while waiting for pods to scale! Restarting...")
+                print("⚠ Error: Timeout exceeded while waiting for pods to scale! Restarting...")
                 start_time = time.time()
                 continue
                 #print("Timeout waiting for pods to scale.")
