@@ -14,7 +14,9 @@ def main():
         action, _ = model.predict(state)
         data, _,   = env.step(action)
         state = data['nextstate']
+        
         print(f"Episode: {i+1}, Action: {action}, State: {state}, Reward: {data['reward']}")
+        
     
 
 if __name__ == '__main__':

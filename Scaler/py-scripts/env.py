@@ -55,7 +55,8 @@ class KubernetesEnv(gymnasium.Env):
         
         reward, RTT  = self.getReward(next_state,0, flooded=False)
         self.rewards.append(reward)
-
+        print(f"\u2705 Reward: {reward}, RTT: {RTT}ms")
+        
         self.data['state'] = state
         self.data['action'] = action
         self.data['reward'] = reward
