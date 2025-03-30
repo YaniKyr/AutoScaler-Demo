@@ -8,7 +8,6 @@ class KubernetesEnv(gymnasium.Env):
     def __init__(self):
         super(KubernetesEnv, self).__init__()
         
-        self.gamma = 0.95
         self.action = [-2, -1, 0, 1, 2]
         self.action_space = gymnasium.spaces.Discrete(len(self.action))
         self.data = {
@@ -35,8 +34,8 @@ class KubernetesEnv(gymnasium.Env):
         return Prometheufunctions().fetchState(), {}
         
         
-    def step(self,  action):
-        
+    def step(self,  action_idx):
+        action = self.action[action_idx]
         state = Prometheufunctions().fetchState()
         done = False
 
