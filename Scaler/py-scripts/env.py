@@ -42,7 +42,7 @@ class KubernetesEnv(gymnasium.Env):
         
     def step(self,  action_idx):
         action = self.action[action_idx]
-
+        print(f"\u2705 Action: {action}")
         try:
             state = Prometheufunctions().fetchState()
         except Exception as e:

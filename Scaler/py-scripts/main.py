@@ -4,7 +4,7 @@ import numpy as np
 
 def train_model(env, model_type='DQN', total_timesteps=10000):
     if model_type == 'DQN':
-        model = DQN("MlpPolicy", env, verbose=1)
+        model = DQN("MlpPolicy", env, verbose=1, learning_rate=0.001, batch_size=64, )
         model.learn(total_timesteps=1000)
         print("✅ Training Completed\n")
 
