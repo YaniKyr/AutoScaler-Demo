@@ -60,7 +60,7 @@ class KubernetesEnv(gymnasium.Env):
         
         
 
-        return next_state, reward, None, None,np.mean(self.rewards) 
+        return next_state, reward, False, False, np.mean(self.rewards) 
         
     
     def getReward(self,data, RTT=0, flooded = False):
