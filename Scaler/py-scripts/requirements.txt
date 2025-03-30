@@ -1,5 +1,6 @@
 prometheus_api_client
 pandas
 numpy
-gym
 stable_baselines3
+gym
+shimmy
