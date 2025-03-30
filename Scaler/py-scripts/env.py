@@ -17,6 +17,7 @@ class KubernetesEnv(gymnasium.Env):
             'sla': None,
             'nextstate': None
         }
+        self.count = 0 
         self.rewards = []
         self.state_size = 3
         self.observation_space = gymnasium.spaces.Box(
@@ -79,6 +80,7 @@ class KubernetesEnv(gymnasium.Env):
             return 0
 
     def scaleAction(self,state, action, _ResetAction = False):
+        self.count += 1
         target_pods = 1
         
 
@@ -87,9 +89,9 @@ class KubernetesEnv(gymnasium.Env):
 
         if not _ResetAction:
             target_pods = state[2] + action
-            
+
         file = '/tmp/shared_file.json'
-        print(f'\u27A1 _ResetAction={_ResetAction}  Action={action} and State: {state}, Going to scale to: {target_pods}')
+        print(f'''\u27A1 Iter: {self.actoin} \n \t_ResetAction={_ResetAction} \n \tAction={action} \n \tState: {state} \n \tGoing to scale to: {target_pods}''')
         # Write scaling action
         with open(file, 'w') as file:
             json.dump({'action': int(target_pods)}, file)

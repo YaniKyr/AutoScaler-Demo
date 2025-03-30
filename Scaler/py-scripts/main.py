@@ -1,3 +1,7 @@
+# TODO: Offline Training
+# TODO: Online Training
+# TODO: Separate the training and prediction scripts 
+# TODO:
 from stable_baselines3 import DQN
 from env import KubernetesEnv
 import numpy as np
