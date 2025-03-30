@@ -29,7 +29,7 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY /go-scripts/go.mod /go-scripts/go.sum /go-scripts/main ./
 
 # Copy application files
-COPY /py-scripts/env.py /py-scripts/main.py /py-scripts/functions.py /go-scripts/main.go  ./
+COPY /py-scripts/env.py /py-scripts/model_learn.py /py-scripts/functions.py /go-scripts/main.go  ./
 
 
 
