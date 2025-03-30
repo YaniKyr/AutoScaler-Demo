@@ -3,3 +3,4 @@ pandas
 numpy
 stable_baselines3
 gymnasium
+tabulate
