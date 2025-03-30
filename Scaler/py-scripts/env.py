@@ -31,14 +31,23 @@ class KubernetesEnv(gymnasium.Env):
         super().reset(seed=seed)
         print("\u2705 Resetting Environment...\n")
         self.scaleAction(Prometheufunctions().fetchState(),0, True) 
-        time.sleep(10)
-
-        return Prometheufunctions().fetchState(), {}
+        time.sleep(40)
+        try:
+            data = Prometheufunctions().fetchState()
+        except Exception as e:
+            print(f'⚠ Error {e}, Prometheus Error in Reset, during data retrieval')
+            return [0,0,0], {}
+        return data ,{}
         
         
     def step(self,  action_idx):
         action = self.action[action_idx]
-        state = Prometheufunctions().fetchState()
+
+        try:
+            state = Prometheufunctions().fetchState()
+        except Exception as e:
+            print(f'⚠ Error {e}, Prometheus Error in Step, during data retrieval')
+            state = [0,0,0]
         done = False
 
         self.scaleAction(state, action)       
@@ -49,13 +58,19 @@ class KubernetesEnv(gymnasium.Env):
             print("\u2705 Scaled up Saccessfuly")
         else:
             print("\u2705 Remaining in the same replica count")
+
         print('\U0001F504 Stabilizing for 30 secs...')
         time.sleep(30)
 
-        next_state = Prometheufunctions().fetchState()
-        
+        try:
+            next_state = Prometheufunctions().fetchState()
+        except Exception as e:
+            print(f'⚠ Error {e}, Prometheus Error in Step NS, during data retrieval')
+            next_state = [0,0,0]
+
         reward, RTT  = self.getReward(next_state,0, flooded=False)
         self.rewards.append(reward)
+
         print(f"\u2705 Reward: {reward}, RTT: {RTT}ms")
         
 
@@ -68,17 +83,20 @@ class KubernetesEnv(gymnasium.Env):
     
     def getReward(self,data, RTT=0, flooded = False):
         p=0.9
-        try:
-            if not flooded:
+       
+        if not flooded:
+            try:
                 RTT = int(round(float(Prometheufunctions().getRTT())))
+            except Exception as e:
+                print(f'⚠ Error {e}, Prometheus Error in Step, during RTT retrieval')
+                RTT = 0
 
-            if data[0] == 1:
-                print("⚠ Warning: data[0] is 1, avoiding division by zero")
-                return 0
-            return ((1 - np.exp(-p * (1 - (RTT / 250)))) if RTT > 250 else (1 - np.exp(-p))) / (1 - data[0]), RTT
-        except Exception as e:
-            print(f'⚠ Error {e}, Prometheus Error, during data retrieval')
+        if data[0] == 1:
+            print("⚠ Warning: data[0] is 1, avoiding division by zero")
             return 0
+        return ((1 - np.exp(-p * (1 - (RTT / 250)))) if RTT > 250 else (1 - np.exp(-p))) / (1 - data[0]), RTT
+    
+    
 
     def scaleAction(self,state, action, _ResetAction = False):
         self.count += 1
@@ -92,12 +110,15 @@ class KubernetesEnv(gymnasium.Env):
             target_pods = state[2] + action
 
         file = '/tmp/shared_file.json'
+
         table_data = [
             ["Iter","_ResetAction","Action", "State", "Scaling to"],
             [self.count, _ResetAction, action, state, target_pods]
         ]
+
         print(tabulate(table_data, tablefmt="grid"))
         # Write scaling action
+
         with open(file, 'w') as file:
             json.dump({'action': int(target_pods)}, file)
 
@@ -106,6 +127,7 @@ class KubernetesEnv(gymnasium.Env):
         #keda might have a bug. When reaching max Replicas e.g. 10 and trying to scale down to 9, it fails
         #to perform the operation. In the other hand all the other scaling actions work properly
         start_time = time.time()
+
         while True:
             
             try:
