@@ -12,7 +12,7 @@ def main():
 
     episode = 40
     state = env.reset()
-
+    print()
     for i in range(episode):
         action, _ = model.predict(state)
         state, Reward, _, _, meanReward   = env.step(action)

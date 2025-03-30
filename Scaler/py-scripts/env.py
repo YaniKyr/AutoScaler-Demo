@@ -57,7 +57,7 @@ class KubernetesEnv(gymnasium.Env):
         self.rewards.append(reward)
         print(f"\u2705 Reward: {reward}, RTT: {RTT}ms")
         
-        
+
         info = {
             "AvgRewards": np.mean(self.rewards) ,
         }
@@ -90,11 +90,12 @@ class KubernetesEnv(gymnasium.Env):
             json.dump({'action': int(target_pods)}, file)
 
         # Wait for Kubernetes to reach the target
-        start_time = time.time()
+        
         #keda might have a bug. When reaching max Replicas e.g. 10 and trying to scale down to 9, it fails
         #to perform the operation. In the other hand all the other scaling actions work properly
-        
+        start_time = time.time()
         while True:
+            
             try:
                 curr_state = Prometheufunctions().fetchState()[2] 
             except Exception as e:
@@ -110,6 +111,7 @@ class KubernetesEnv(gymnasium.Env):
             #Grace Period
             if elapsed_time > 45:
                 print("\u26A0 Error: Timeout exceeded while waiting for pods to scale! Restarting...")
+                start_time = time.time()
                 continue
                 #print("Timeout waiting for pods to scale.")
             
