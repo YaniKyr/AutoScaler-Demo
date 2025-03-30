@@ -1,16 +1,16 @@
-import gym
+import gymnasium
 import json
 import time
 from functions import Prometheufunctions
 import numpy as np
 
-class KubernetesEnv(gym.Env):
+class KubernetesEnv(gymnasium.Env):
     def __init__(self):
         super(KubernetesEnv, self).__init__()
         
         self.gamma = 0.95
         self.action = [-2, -1, 0, 1, 2]
-        self.action_space = gym.spaces.Discrete(len(self.action))
+        self.action_space = gymnasium.spaces.Discrete(len(self.action))
         self.data = {
             'state': None,
             'action': None,
@@ -20,7 +20,7 @@ class KubernetesEnv(gym.Env):
         }
         self.rewards = []
         self.state_size = 3
-        self.observation_space = gym.spaces.Box(
+        self.observation_space = gymnasium.spaces.Box(
             low=np.array([0, 0, 1]),  # Minimum values for CPU, requests, and pods
             high=np.array([1, 1000, 10]),  # Maximum values for CPU, requests, and pods
             dtype=np.float32
