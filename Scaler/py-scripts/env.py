@@ -57,13 +57,10 @@ class KubernetesEnv(gymnasium.Env):
         self.rewards.append(reward)
         print(f"\u2705 Reward: {reward}, RTT: {RTT}ms")
         
-        self.data['state'] = state
-        self.data['action'] = action
-        self.data['reward'] = reward
-        self.data['sla'] = RTT
-        self.data['nextstate'] = state
+        
+        
 
-        return self.data, done, np.mean(self.rewards) 
+        return next_state, reward, None, None,np.mean(self.rewards) 
         
     
     def getReward(self,data, RTT=0, flooded = False):
