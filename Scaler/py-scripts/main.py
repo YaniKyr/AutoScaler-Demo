@@ -4,11 +4,16 @@ from env import KubernetesEnv
 
     
 
+
 def main():
     env = KubernetesEnv()
     
     model = DQN("MlpPolicy", env, verbose=1)
-    model.learn(total_timesteps=10000)
+    model.learn(total_timesteps=500)
+
+    model.save("dqn_model")
+
+    print("✅ Training Completed")
 
     episode = 40
     state = env.reset()

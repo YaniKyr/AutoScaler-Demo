@@ -84,7 +84,7 @@ class KubernetesEnv(gymnasium.Env):
         if not _ResetAction:
             target_pods = state[2] + action
         file = '/tmp/shared_file.json'
-
+        print(f'\u27A1 _ResetAction={_ResetAction} and State: {state}  Action={action} and State: {state}, Going to scale to: {target_pods}')
         # Write scaling action
         with open(file, 'w') as file:
             json.dump({'action': int(target_pods)}, file)
