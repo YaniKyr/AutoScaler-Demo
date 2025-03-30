@@ -30,7 +30,7 @@ class KubernetesEnv(gymnasium.Env):
         super().reset(seed=seed)
         print("\u2705 Resetting Environment...")
         self.scaleAction(Prometheufunctions().fetchState(),0, True) 
-        time.sleep(120)
+        time.sleep(60)
 
         return Prometheufunctions().fetchState(), {}
         
