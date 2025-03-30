@@ -1,5 +1,5 @@
 prometheus_api_client
-flask
 pandas
 numpy
-tensorflow
+gym
+stable_baselines3
