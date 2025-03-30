@@ -45,7 +45,7 @@ class Prometheufunctions:
         #import ipdb; ipdb.set_trace()
         data = self.prom.custom_query(query=query)
         metric = float(data[0]['value'][1])
-        print("Why:",metric)
+        
         return metric
     
     def fetchState(self):
