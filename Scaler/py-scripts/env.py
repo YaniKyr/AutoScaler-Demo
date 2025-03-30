@@ -80,7 +80,7 @@ class KubernetesEnv(gymnasium.Env):
             return 0
 
     def scaleAction(self,state, action, _ResetAction = False):
-        action = 1 - state[2]
+        target_pods = 1
         if not _ResetAction:
             target_pods = state[2] + action
         file = '/tmp/shared_file.json'
