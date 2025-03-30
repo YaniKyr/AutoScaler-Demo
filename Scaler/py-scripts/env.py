@@ -75,7 +75,7 @@ class KubernetesEnv(gymnasium.Env):
             if data[0] == 1:
                 print("⚠ Warning: data[0] is 1, avoiding division by zero")
                 return 0
-            return ((1 - np.exp(-p * (1 - (RTT / 250)))) if RTT < 250 else (1 - np.exp(-p))) / (1 - data[0]), RTT
+            return ((1 - np.exp(-p * (1 - (RTT / 250)))) if RTT > 250 else (1 - np.exp(-p))) / (1 - data[0]), RTT
         except Exception as e:
             print(f'⚠ Error {e}, Prometheus Error, during data retrieval')
             return 0
