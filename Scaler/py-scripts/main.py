@@ -27,7 +27,7 @@ def save_losses_to_file(losses, filename='losses.json'):
 def Post(a2c, models,states,step_count):
     #keda might have a bug. When reaching max Replicas e.g. 10 and trying to scale down to 9, it fails
     #to perform the operation. In the other hand all the other scaling actions work properly
-    states = np.reshape(states, (-1, 3))
+    
     best_actor = a2c.select_best_actor(models, states)
     state_tensor = np.expand_dims(states, axis=0)
     action_probs, value = best_actor(state_tensor)
