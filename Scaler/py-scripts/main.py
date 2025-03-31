@@ -6,7 +6,7 @@ def train_model(env, model_type='DQN', total_timesteps=1000):
     for _ in range(10):
         if model_type == 'DQN':
             try:
-                model = DQN("MlpPolicy", env, verbose=1,tensorboard_log=f"./{model_type}tensorboard_logs")
+                model = DQN("MlpPolicy", env, verbose=2)
                 model.learn(total_timesteps=1000)
             except Exception as e:
                 print(f'⚠ Error {e}, during training')
@@ -20,7 +20,7 @@ def train_model(env, model_type='DQN', total_timesteps=1000):
 
         elif model_type == 'PPO':
             try:
-                model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=f"./{model_type}tensorboard_logs")
+                model = PPO("MlpPolicy", env, verbose=2 )
                 model.learn(total_timesteps=total_timesteps)
             except Exception as e:
                 print(f'⚠ Error {e}, during training')
@@ -33,7 +33,7 @@ def train_model(env, model_type='DQN', total_timesteps=1000):
 
         elif model_type == 'A2C':
             try:
-                model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=f"./{model_type}tensorboard_logs")
+                model = A2C("MlpPolicy", env, verbose=2 )
                 model.learn(total_timesteps=total_timesteps)
             except Exception as e:
                 print(f'⚠ Error {e}, during training')
