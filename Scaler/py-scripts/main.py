@@ -2,32 +2,47 @@ from stable_baselines3 import DQN, PPO, A2C
 from env import KubernetesEnv
 import numpy as np
 
-def train_model(env, model_type='DQN', total_timesteps=10000):
-    if model_type == 'DQN':
-        model = DQN("MlpPolicy", env, verbose=1, learning_rate=0.001, batch_size=64, )
-        model.learn(total_timesteps=1000)
-        print("✅ Training Completed\n")
+def train_model(env, model_type='DQN', total_timesteps=1000):
+    for _ in range(10):
+        if model_type == 'DQN':
+            try:
+                model = DQN("MlpPolicy", env, verbose=1,tensorboard_log=f"./{model_type}tensorboard_logs")
+                model.learn(total_timesteps=1000)
+            except Exception as e:
+                print(f'⚠ Error {e}, during training')
+                break
+            print("✅ Training Completed\n")
 
-        model.save(f"{model_type}_model") 
-        print("✅ Model Saved\n")
+            model.save(f"{model_type}_model") 
+            print("✅ Model Saved\n")
 
-        print("Loss: ", model.logger.get_log('train/loss'),"\n")
+            
 
-    elif model_type == 'PPO':
-        model = PPO("MlpPolicy", env, verbose=1)
-        model.learn(total_timesteps=total_timesteps)
-        print("✅ Training Completed\n")
-        model.save(f"{model_type}_model") 
-        print("✅ Model Saved\n")
-        print("Loss: ", model.logger.get_log('train/loss'),"\n")
+        elif model_type == 'PPO':
+            try:
+                model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=f"./{model_type}tensorboard_logs")
+                model.learn(total_timesteps=total_timesteps)
+            except Exception as e:
+                print(f'⚠ Error {e}, during training')
+                break
+     
+            print("✅ Training Completed\n")
+            model.save(f"{model_type}_model") 
+            print("✅ Model Saved\n")
+            
 
-    elif model_type == 'A2C':
-        model = A2C("MlpPolicy", env, verbose=1)
-        model.learn(total_timesteps=total_timesteps)
-        print("✅ Training Completed\n")
-        model.save(f"{model_type}_model")
-        print("✅ Model Saved\n")
-        print("Loss: ", model.logger.get_log('train/loss'),"\n")
+        elif model_type == 'A2C':
+            try:
+                model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=f"./{model_type}tensorboard_logs")
+                model.learn(total_timesteps=total_timesteps)
+            except Exception as e:
+                print(f'⚠ Error {e}, during training')
+                break
+           
+            print("✅ Training Completed\n")
+            model.save(f"{model_type}_model")
+            print("✅ Model Saved\n")
+            
         
 
 def load_model(env, model_type='DQN', episodes=10):
@@ -46,7 +61,7 @@ def main():
     env = KubernetesEnv()
     print("✅ Environment Created\n")
     
-    for ele in ['DQN', 'PPO', 'A2C']:
+    for ele in ['DQN']:
         train_model(env, model_type=ele, total_timesteps=1000)
     
  
