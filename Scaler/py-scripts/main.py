@@ -65,14 +65,13 @@ def main():
 
     # Buffer to store prediction results
     prediction_buffer = []
-
+    state, _ = env.reset()
+    model = load_model(env, model_type='DQN')
     while True:
-        state, _ = env.reset()
-        model = load_model(env, model_type='DQN')
         
         for i in range(episode):
             try:
-                action, _ = model.predict(state)
+                action, _ = model.predict(np.array(state))
             except Exception as e:
                 print(f'⚠ Error {e}, during prediction')
                 break
