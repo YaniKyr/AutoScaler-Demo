@@ -8,13 +8,13 @@ def train_model(env, model_type='DQN', total_timesteps=1000, episode=10):
     for _ in range(episode):
         try:
             model = load_model(env, model_type=model_type)
-                
+            print("✅ Training Completed\n")
             model.learn(total_timesteps=total_timesteps)
         except Exception as e:
             print(f'⚠ Error {e}, during training')
             break
 
-        print("✅ Training Completed\n")
+        
         try:
             model.save(f"{model_type}_model") 
             print("✅ Model Saved\n")
@@ -27,11 +27,11 @@ def load_model(env, model_type='DQN'):
     if os.path.exists(f"{model_type}_model.zip"):
         match model_type:
             case 'DQN':
-                model = DQN.load(f"{model_type}_model")
+                model = DQN.load(f"{model_type}_model.zip")
             case 'PPO':
-                model = PPO.load(f"{model_type}_model")
+                model = PPO.load(f"{model_type}_model.zip")
             case 'A2C':
-                model = A2C.load(f"{model_type}_model")
+                model = A2C.load(f"{model_type}_model.zip")
             case _:
                 print(f"⚠ Unsupported model type: {model_type}")
                 
