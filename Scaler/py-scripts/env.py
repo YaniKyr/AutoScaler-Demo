@@ -50,7 +50,7 @@ class KubernetesEnv(gymnasium.Env):
             state = [0,0,0]
         done = False
         flag =False
-        while flas: 
+        while flag: 
             print("🔴 Waiting for scaling action to complete...")
             flag = self.scaleAction(state, action)   
 
