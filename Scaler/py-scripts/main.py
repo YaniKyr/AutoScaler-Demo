@@ -1,60 +1,53 @@
 from stable_baselines3 import DQN, PPO, A2C
 from env import KubernetesEnv
 import numpy as np
+import os
 
-def train_model(env, model_type='DQN', total_timesteps=1000):
-    for _ in range(10):
-        if model_type == 'DQN':
-            try:
-                model = DQN("MlpPolicy", env, verbose=2)
-                model.learn(total_timesteps=1000)
-            except Exception as e:
-                print(f'⚠ Error {e}, during training')
-                break
-            print("✅ Training Completed\n")
 
+def train_model(env, model_type='DQN', total_timesteps=1000, episode=10):
+    for _ in range(episode):
+        try:
+            model = load_model(env, model_type=model_type)
+                
+            model.learn(total_timesteps=total_timesteps)
+        except Exception as e:
+            print(f'⚠ Error {e}, during training')
+            break
+
+        print("✅ Training Completed\n")
+        try:
             model.save(f"{model_type}_model") 
             print("✅ Model Saved\n")
+        except Exception as e:
+            print(f'⚠ Error {e}, during model saving')
+            break
 
-            
-
-        elif model_type == 'PPO':
-            try:
+def load_model(env, model_type='DQN'):
+    
+    if os.path.exists(f"{model_type}_model.zip"):
+        match model_type:
+            case 'DQN':
+                model = DQN.load(f"{model_type}_model")
+            case 'PPO':
+                model = PPO.load(f"{model_type}_model")
+            case 'A2C':
+                model = A2C.load(f"{model_type}_model")
+            case _:
+                print(f"⚠ Unsupported model type: {model_type}")
+                
+        print("✅ Model Loaded\n")
+    else:
+        match model_type:
+            case 'DQN':
+                print(f"⚠ Model file for {model_type} not found. Please train the model first.")
+                model = DQN("MlpPolicy", env, verbose=2 )
+            case 'PPO':
+                print(f"⚠ Model file for {model_type} not found. Please train the model first.")
                 model = PPO("MlpPolicy", env, verbose=2 )
-                model.learn(total_timesteps=total_timesteps)
-            except Exception as e:
-                print(f'⚠ Error {e}, during training')
-                break
-     
-            print("✅ Training Completed\n")
-            model.save(f"{model_type}_model") 
-            print("✅ Model Saved\n")
-            
-
-        elif model_type == 'A2C':
-            try:
+            case 'A2C':
+                print(f"⚠ Model file for {model_type} not found. Please train the model first.")
                 model = A2C("MlpPolicy", env, verbose=2 )
-                model.learn(total_timesteps=total_timesteps)
-            except Exception as e:
-                print(f'⚠ Error {e}, during training')
-                break
-           
-            print("✅ Training Completed\n")
-            model.save(f"{model_type}_model")
-            print("✅ Model Saved\n")
             
-        
-
-def load_model(env, model_type='DQN', episodes=10):
-    if model_type == 'DQN':
-        model = DQN.load(f"{model_type}_model")
-        print("✅ Model Loaded\n")
-    elif model_type == 'PPO':
-        model = PPO.load(f"{model_type}_model")
-        print("✅ Model Loaded\n")
-    elif model_type == 'A2C':
-        model = A2C.load(f"{model_type}_model")
-        print("✅ Model Loaded\n")
     return model
 
 def main():
@@ -62,7 +55,7 @@ def main():
     print("✅ Environment Created\n")
     
     for ele in ['DQN']:
-        train_model(env, model_type=ele, total_timesteps=1000)
+        train_model(env, model_type=ele, total_timesteps=1000, episode=10)
     
  
     episode = 60
@@ -74,7 +67,7 @@ def main():
 
     while True:
         state, _ = env.reset()
-        model = load_model(env, model_type='DQN', episodes=10)
+        model = load_model(env, model_type='DQN')
         print(f"✅ Model Loaded: {ele}\n")
         for i in range(episode):
             try:
