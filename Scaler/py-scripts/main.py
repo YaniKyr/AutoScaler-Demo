@@ -56,7 +56,7 @@ def main():
     print("✅ Environment Created\n")
     
     for ele in ['DQN']:
-        train_model(env, model_type=ele, total_timesteps=1, episode=1)
+        train_model(env, model_type=ele, total_timesteps=1000, episode=10)
     
  
     episode = 60
