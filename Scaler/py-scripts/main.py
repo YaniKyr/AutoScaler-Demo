@@ -8,8 +8,9 @@ def train_model(env, model_type='DQN', total_timesteps=1000, episode=10):
     for _ in range(episode):
         try:
             model = load_model(env, model_type=model_type)
-            print("✅ Training Completed\n")
+            
             model.learn(total_timesteps=total_timesteps)
+            print("✅ Training Completed\n")
         except Exception as e:
             print(f'⚠ Error {e}, during training')
             break
@@ -34,8 +35,7 @@ def load_model(env, model_type='DQN'):
                 model = A2C.load(f"{model_type}_model.zip")
             case _:
                 print(f"⚠ Unsupported model type: {model_type}")
-                
-        print("✅ Model Loaded\n")
+        print(f"✅ Model Loaded: {model_type}\n")
     else:
         match model_type:
             case 'DQN':
@@ -68,13 +68,14 @@ def main():
     while True:
         state, _ = env.reset()
         model = load_model(env, model_type='DQN')
-        print(f"✅ Model Loaded: {ele}\n")
+        
         for i in range(episode):
             try:
                 action, _ = model.predict(state)
             except Exception as e:
                 print(f'⚠ Error {e}, during prediction')
                 break
+            print(action)
             action = int(np.argmax(action[0]))
             state, Reward, _, _, meanReward = env.step(action)
 
