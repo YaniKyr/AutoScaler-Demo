@@ -49,7 +49,7 @@ class KubernetesEnv(gymnasium.Env):
             print(f'⚠ Error {e}, Prometheus Error in Step, during data retrieval')
             state = [0,0,0]
         done = False
-        flag =False
+        flag = True
         while flag: 
             print("🔴 Waiting for scaling action to complete...")
             flag = self.scaleAction(state, action)   
@@ -147,7 +147,7 @@ class KubernetesEnv(gymnasium.Env):
             #Grace Period
             if elapsed_time > 45:
                 print("⚠ Error: Timeout exceeded while waiting for pods to scale! Restarting...")
-                start_time = time.time()
+                
                 return True
                 #print("Timeout waiting for pods to scale.")
             
