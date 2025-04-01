@@ -3,6 +3,7 @@ from env import KubernetesEnv
 import numpy as np
 import os
 
+ACTIONS = [-2, -1, 0, 1, 2]
 
 def train_model(env, model_type='DQN', total_timesteps=1000, episode=10):
     for _ in range(episode):
@@ -75,9 +76,7 @@ def main():
             except Exception as e:
                 print(f'⚠ Error {e}, during prediction')
                 break
-            print(action)
-            action = int(np.argmax(action[0]))
-            state, Reward, _, _, meanReward = env.step(action)
+            state, Reward, _, _, meanReward = env.step(ACTIONS[action])
 
             # Save results to buffer
             prediction_buffer.append({
