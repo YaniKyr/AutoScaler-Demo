@@ -2,16 +2,81 @@ from stable_baselines3 import DQN, PPO, A2C
 from env import KubernetesEnv
 import numpy as np
 import os
+import pandas as pd
+import time
 
-ACTIONS = [-2, -1, 0, 1, 2]
 
-def train_model(env, model_type='DQN', total_timesteps=1000, episode=10):
+def load_Dataset():
+    if os.path.exists("dataset.csv"):
+        print("✅ Dataset Loaded\n")
+        return pd.read_csv("dataset.csv"), True
+    else:
+        print("⚠ Dataset not found. Please create a dataset first.")
+        return None, False
+
+def save_replay_buffer_to_csv(model, filename="replay_buffer.csv"):
+    try:
+        if hasattr(model, "replay_buffer") and model.replay_buffer is not None:
+            data = []
+            for i in range(len(model.replay_buffer)):
+                obs, action, reward, next_obs, done = model.replay_buffer.sample(1)
+                data.append({
+                    "obs": obs.flatten().tolist(),
+                    "action": action.flatten().tolist(),
+                    "reward": reward.flatten().tolist(),
+                    "next_obs": next_obs.flatten().tolist(),
+                    "done": done.flatten().tolist()
+                })
+            df = pd.DataFrame(data)
+            df.to_csv(filename, index=False)
+            print(f"✅ Replay buffer saved to {filename}\n")
+        else:
+            print("⚠ Model does not have a replay buffer to save.\n")
+    except Exception as e:
+        print(f"⚠ Error {e}, during replay buffer saving\n")
+
+def offline_training(env, dataset, model_type='DQN', total_timesteps=200, episode=50):
+    for _ in range(episode):
+        
+        model = load_model(env, model_type=model_type, verbose=2 )
+        print("✅ Model Loaded\n")
+        time.sleep(10)
+
+        
+        for _, row in dataset.iterrows():
+            obs = row['obs']
+            action = row['action']
+            reward = row['reward']
+            next_obs = row['next_obs']
+            try:
+                model.replay_buffer.add(obs, next_obs, action, reward, done=False)
+            except Exception as e:
+                print(f'⚠ Error {e}, during replay buffer addition')
+                break
+        
+        try:
+            model.learn(total_timesteps=total_timesteps)
+        except Exception as e:
+            print(f'⚠ Error {e}, during model training')
+            break
+        
+        try:
+            model.save(f"{model_type}_model") 
+            print("✅ Model Saved\n")
+        except Exception as e:
+            print(f'⚠ Error {e}, during model saving')
+            break
+
+
+def online_training(env, model_type='DQN', total_timesteps=1000, episode=10):
     for _ in range(episode):
         try:
             model = load_model(env, model_type=model_type)
-            
+            print("✅ Model Loaded\n")
+            time.sleep(10)
+
             model.learn(total_timesteps=total_timesteps)
-            print("✅ Training Completed\n")
+            
         except Exception as e:
             print(f'⚠ Error {e}, during training')
             break
@@ -24,76 +89,56 @@ def train_model(env, model_type='DQN', total_timesteps=1000, episode=10):
             print(f'⚠ Error {e}, during model saving')
             break
 
-def load_model(env, model_type='DQN'):
+    save_replay_buffer_to_csv(model, filename="replay_buffer.csv")
+
+def load_model(env, model_type='DQN', verbose=2):
     
-    if os.path.exists(f"{model_type}_model.zip"):
-        match model_type:
-            case 'DQN':
+    match model_type:
+        case 'DQN':
+            if os.path.exists(f"{model_type}_model.zip"):
                 model = DQN.load(f"{model_type}_model.zip")
-            case 'PPO':
+            else:
+                print(f"⚠ Model file for {model_type} not found. Please train the model first.")
+                model = DQN("MlpPolicy", env, verbose=verbose ) 
+        case 'PPO':
+            if os.path.exists(f"{model_type}_model.zip"):
                 model = PPO.load(f"{model_type}_model.zip")
-            case 'A2C':
+            else:
+                print(f"⚠ Model file for {model_type} not found. Please train the model first.")
+                model = PPO("MlpPolicy", env, verbose=verbose)
+        case 'A2C':
+            if os.path.exists(f"{model_type}_model.zip"):
                 model = A2C.load(f"{model_type}_model.zip")
-            case _:
-                print(f"⚠ Unsupported model type: {model_type}")
-        print(f"✅ Model Loaded: {model_type}\n")
-    else:
-        match model_type:
-            case 'DQN':
+            else:
                 print(f"⚠ Model file for {model_type} not found. Please train the model first.")
-                model = DQN("MlpPolicy", env, verbose=2 )
-            case 'PPO':
-                print(f"⚠ Model file for {model_type} not found. Please train the model first.")
-                model = PPO("MlpPolicy", env, verbose=2 )
-            case 'A2C':
-                print(f"⚠ Model file for {model_type} not found. Please train the model first.")
-                model = A2C("MlpPolicy", env, verbose=2 )
+                model = A2C("MlpPolicy", env, verbose=verbose )
+        case _:
+            print(f"⚠ Unsupported model type: {model_type}")
+
+    print(f"✅ Model Loaded: {model_type}\n")
             
     return model
 
 def main():
     env = KubernetesEnv()
     print("✅ Environment Created\n")
+    env.reset()
+    print("✅ Environment Reset\n")
+
+    if load_Dataset()[1]:
+        print("✅ Starting Offline Training...\n")
+        for ele in ['DQN', 'PPO', 'A2C']:
+            offline_training(env, model_type=ele, total_timesteps=1000, episode=10)
     
     for ele in ['DQN']:
-        train_model(env, model_type=ele, total_timesteps=1000, episode=10)
+        online_training(env, model_type=ele, total_timesteps=200, episode=50)
+
+    
     
  
-    episode = 60
-    print("✅ Environment Reset\n")
-    print("✅ Starting Prediction...\n")
-
-    # Buffer to store prediction results
-    prediction_buffer = []
-    state, _ = env.reset()
-    model = load_model(env, model_type='DQN')
-    while True:
-        
-        for i in range(episode):
-            try:
-                action, _ = model.predict(np.array(state))
-            except Exception as e:
-                print(f'⚠ Error {e}, during prediction')
-                break
-            state, Reward, _, _, meanReward = env.step(ACTIONS[action])
-
-            # Save results to buffer
-            prediction_buffer.append({
-                "Episode": i + 1,
-                "Model": ele,
-                "Action": action,
-                "State": state,
-                "Reward": Reward,
-                "Mean Reward": meanReward
-            })
-
-            print(f"Episode: {i+1}, Action: {action}, State: {state}, Reward: {Reward}, Mean Reward: {meanReward}")
     
-    # Optionally, save the buffer to a file
-    with open("prediction_results.json", "w") as f:
-        import json
-        json.dump(prediction_buffer, f, indent=4)
-    print("✅ Prediction results saved to prediction_results.json")
+    
+ 
 
 if __name__ == '__main__':
     main()
