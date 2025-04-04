@@ -35,7 +35,8 @@ def save_replay_buffer_to_csv(model, filename="replay_buffer.csv"):
     except Exception as e:
         print(f"⚠ Error {e}, during replay buffer saving\n")
 
-def offline_training(env, dataset, model_type='DQN', total_timesteps=200, episode=50):
+def offline_training(env, model_type='DQN', total_timesteps=200, episode=50):
+    dataset , _= load_Dataset()
     for _ in range(episode):
         
         model = load_model(env, model_type=model_type, verbose=2 )
@@ -129,16 +130,9 @@ def main():
         print("✅ Starting Offline Training...\n")
         for ele in ['DQN', 'PPO', 'A2C']:
             offline_training(env, model_type=ele, total_timesteps=1000, episode=10)
-    
-    for ele in ['DQN']:
-        online_training(env, model_type=ele, total_timesteps=200, episode=50)
-
-    
-    
- 
-    
-    
- 
+    else:
+        for ele in ['DQN']:
+            online_training(env, model_type=ele, total_timesteps=200, episode=50)
 
 if __name__ == '__main__':
     main()
