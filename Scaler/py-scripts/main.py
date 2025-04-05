@@ -27,7 +27,7 @@ def save_replay_buffer_to_csv(model, filename="replay_buffer.csv"):
                     "next_obs": next_obs.flatten().tolist(),
                     "done": done.flatten().tolist()
                 })
-            df = pd.DataFrame(data)
+            df = pd.DataFrame(data) 
             df.to_csv(filename, index=False)
             print(f"✅ Replay buffer saved to {filename}\n")
         else:
@@ -117,7 +117,7 @@ def load_model(env, model_type='DQN', verbose=2):
             print(f"⚠ Unsupported model type: {model_type}")
 
     print(f"✅ Model Loaded: {model_type}\n")
-            
+    model.set_env(env)
     return model
 
 def main():
