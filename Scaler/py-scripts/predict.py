@@ -7,7 +7,7 @@ def load_model(env, model_type='DQN', verbose=2):
     
     
     try:
-        model = DQN.load(f"offline_model.zip")
+        model = DQN.load(f"dqn_model.zip")
         return model
     except Exception as e:
         print(f'⚠ Error {e}, during model loading')

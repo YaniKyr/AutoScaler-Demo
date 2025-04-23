@@ -9,7 +9,7 @@ class KubernetesEnv(gymnasium.Env):
     def __init__(self):
         super(KubernetesEnv, self).__init__()
         
-        self.action = [-2, -1, 0, 1, 2]
+        self.action = [0,1,2]
         self.action_space = gymnasium.spaces.Discrete(len(self.action))
         self.data = {
             'state': None,
@@ -41,7 +41,12 @@ class KubernetesEnv(gymnasium.Env):
         
         
     def step(self,  action_idx):
-        action = self.action[action_idx]
+        if action_idx ==0:
+          action = 0
+        elif action_idx ==1:
+            action = 1
+        elif action_idx ==2:
+            action = -1
         print(f"\u2705 Action: {action}")
         try:
             state = Prometheufunctions().fetchState()
@@ -105,7 +110,7 @@ class KubernetesEnv(gymnasium.Env):
         target_pods = 1
         
 
-        if action + state[2] > 9 or action + state[2] < 1:
+        if action + state[2] > 6 or action + state[2] < 1:
             action = 0
 
         if not _ResetAction:

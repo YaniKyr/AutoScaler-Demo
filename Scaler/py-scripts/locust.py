@@ -7,11 +7,11 @@ import gevent
 
 # Parameters
 n_users = 100  # Max users
-n_timesteps = 1000 # Number of time steps in the dataset
+n_timesteps = 700 # Number of time steps in the dataset
 timestep_min = 1  # Minimum timestep in seconds
 timestep_max = 10  # Maximum timestep in seconds
-start_end_period_seconds = 15 * 60  # 20 minutes in seconds
-start_end_user_range = (10,15)  # User count during start/end period
+start_end_period_seconds = 3 * 60  # 20 minutes in seconds
+start_end_user_range = (5,8)  # User count during start/end period
 
 # Generate time series data with a dome-shaped pattern and bursts
 timesteps = [random.randint(timestep_min, timestep_max) for _ in range(n_timesteps)]
