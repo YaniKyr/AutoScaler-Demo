@@ -4,30 +4,30 @@ import numpy as np
 import os
 
 def load_model(env, model_type='DQN', verbose=2):
-    
-    
+
+
     try:
-        model = DQN.load(f"dqn_model.zip")
+        model = DQN.load(f"dqn_model5.zip")
         return model
     except Exception as e:
         print(f'⚠ Error {e}, during model loading')
         return None
-    
+
 
 
 def main():
-    print("⚙️  Init Env...\n")
+    print("   Init Env...\n")
     env = KubernetesEnv()
 
-    episode = 60
+    episode = 1000
     print("✅ Environment Reset\n")
-    print("⚙️  Starting Prediction...\n")
+    print("   Starting Prediction...\n")
     # Buffer to store prediction results
     prediction_buffer = []
     state, _ = env.reset()
     model = load_model(env, model_type='DQN')
-    
-    
+
+
     for i in range(episode):
         try:
             action, _ = model.predict(np.array(state))
@@ -56,3 +56,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+                                
