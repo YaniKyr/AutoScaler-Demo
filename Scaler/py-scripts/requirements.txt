@@ -1,5 +1,6 @@
 prometheus_api_client
-flask
 pandas
 numpy
-tensorflow
+stable_baselines3
+gymnasium
+tabulate

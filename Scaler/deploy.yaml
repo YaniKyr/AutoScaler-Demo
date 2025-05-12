@@ -50,7 +50,7 @@ spec:
     name: productpage-v1        
   cooldownPeriod: 3     
   minReplicaCount: 1            
-  maxReplicaCount: 9           
+  maxReplicaCount: 6           
   triggers:
   - type: external-push         
     metadata:

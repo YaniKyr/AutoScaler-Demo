@@ -1,5 +1,4 @@
 from prometheus_api_client import PrometheusConnect
-import pandas as pd
 import requests
 from datetime import datetime, timedelta
 
@@ -14,11 +13,41 @@ class Prometheufunctions:
         }
         
 
+    def getQueryRange(self, query, start_time=None, end_time=None, step='1m'):
+        if start_time and end_time:
+            data = self.prom.custom_query_range(
+                query=query,
+                start_time=start_time,
+                end_time=end_time,
+                step=step
+            )
+        else:
+            data = self.prom.custom_query(query=query)
+        return data
+    
+    def floodReplayBuffer(self, minutes=1):
+        end_time = datetime.now()
+        start_time = end_time - timedelta(minutes=minutes)
+
+        cpu_data = self.getQueryRange(self.queries['cpuUtil'], start_time, end_time)
+        reqs_data = self.getQueryRange(self.queries['userRequests'], start_time, end_time)
+        pods_data = self.getQueryRange(self.queries['numpods'], start_time, end_time)
+        rt_obs = self.getQueryRange(self.queries['RT_obs'], start_time, end_time)
+
+        cpu = [float(point[1]) for point in cpu_data[0]['values']]
+        reqs = [float(point[1]) for point in reqs_data[0]['values']]
+        pods = [int(point[1]) for point in pods_data[0]['values']]
+        rt = [float(point[1]) for point in rt_obs[0]['values']]
+        return cpu, reqs, pods, rt
+        
+
     def query(self,query):
         #import ipdb; ipdb.set_trace()
         data = self.prom.custom_query(query=query)
         metric = float(data[0]['value'][1])
+        
         return metric
+    
     def fetchState(self):
         
         cpu = self.query(self.queries['cpuUtil'])
